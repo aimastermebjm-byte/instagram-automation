@@ -5,7 +5,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(vercel --prod --yes)",
-      "Bash(vercel inspect:*)"
+      "Bash(vercel inspect:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(py:*)",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []
