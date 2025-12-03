@@ -1,6 +1,4 @@
-# 🤖 Instagram Automation System
-
-Automated Instagram content creation system powered by Z.ai API that generates news-based posts with engaging captions and custom images.
+## ✨ Core Features
 
 ## ✨ Features
 
