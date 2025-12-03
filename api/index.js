@@ -306,6 +306,7 @@ function handleJobs(req, res) {
 }
 
 function handleTopics(req, res) {
+  // Ensure defaultTopics is always an array
   const defaultTopics = [
     "Artificial Intelligence",
     "Machine Learning",
