@@ -17,45 +17,45 @@ module.exports = async (req, res) => {
   }
 
   const { method, url } = req;
-  const path = url.split('?')[0];
+  const requestPath = url.split('?')[0];
 
   try {
     // Route handling
-    if (path === '/' && method === 'GET') {
+    if (requestPath === '/' && method === 'GET') {
       return handleIndex(req, res);
     }
 
-    if (path === '/api/setup' && method === 'POST') {
+    if (requestPath === '/api/setup' && method === 'POST') {
       return handleSetup(req, res);
     }
 
-    if (path === '/api/test-connection' && method === 'POST') {
+    if (requestPath === '/api/test-connection' && method === 'POST') {
       return handleTestConnection(req, res);
     }
 
-    if (path === '/api/start-job' && method === 'POST') {
+    if (requestPath === '/api/start-job' && method === 'POST') {
       return handleStartJob(req, res);
     }
 
-    if (path.startsWith('/api/job-status/') && method === 'GET') {
-      const jobId = path.split('/api/job-status/')[1];
+    if (requestPath.startsWith('/api/job-status/') && method === 'GET') {
+      const jobId = requestPath.split('/api/job-status/')[1];
       return handleJobStatus(req, res, jobId);
     }
 
-    if (path.startsWith('/api/job-results/') && method === 'GET') {
-      const jobId = path.split('/api/job-results/')[1];
+    if (requestPath.startsWith('/api/job-results/') && method === 'GET') {
+      const jobId = requestPath.split('/api/job-results/')[1];
       return handleJobResults(req, res, jobId);
     }
 
-    if (path === '/api/jobs' && method === 'GET') {
+    if (requestPath === '/api/jobs' && method === 'GET') {
       return handleJobs(req, res);
     }
 
-    if (path === '/api/topics' && method === 'GET') {
+    if (requestPath === '/api/topics' && method === 'GET') {
       return handleTopics(req, res);
     }
 
-    if (path === '/api/config' && method === 'GET') {
+    if (requestPath === '/api/config' && method === 'GET') {
       return handleConfig(req, res);
     }
 
