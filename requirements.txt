@@ -1,11 +1,6 @@
+# Core dependencies for Z.ai API
 requests>=2.31.0
 python-dotenv>=1.0.0
-Pillow>=10.0.0
-beautifulsoup4>=4.12.0
-lxml>=4.9.0
-python-dateutil>=2.8.2
-aiohttp>=3.9.0
-asyncio-throttle>=1.0.2
 
 # Web App Dependencies
 Flask>=2.3.0
@@ -19,4 +14,6 @@ click>=8.1.0
 
 # PWA & Mobile Support
 gunicorn>=21.0.0
-eventlet>=0.33.0
+
+# Database
+supabase>=2.0.0
