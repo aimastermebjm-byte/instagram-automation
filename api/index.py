@@ -1,51 +1,56 @@
 #!/usr/bin/env python3
 """
-Simple Vercel Serverless Function Handler
+Minimal Vercel Serverless Function for testing
 """
 import json
 
 def handler(request):
-    """Simple handler for Vercel serverless function"""
+    """Basic Vercel serverless function handler"""
+
+    print(f"DEBUG: Request method: {request.method}")
+    print(f"DEBUG: Request path: {request.path}")
+    print(f"DEBUG: Request headers: {dict(request.headers)}")
 
     try:
-        # Get request data
-        method = request.method
-        path = request.path
-
-        # Simple response for testing
+        # Simple response
         response_data = {
+            "status": "success",
             "message": "Instagram Automation API is running!",
-            "method": method,
-            "path": path,
-            "status": "success"
+            "method": request.method or "GET",
+            "path": request.path or "/",
+            "debug": "Basic handler working"
         }
 
-        # Return successful response
+        response_body = json.dumps(response_data, indent=2)
+
         return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key'
             },
-            'body': json.dumps(response_data, indent=2)
+            'body': response_body
         }
 
     except Exception as e:
-        # Return error response
+        print(f"ERROR: {str(e)}")
+        error_response = {
+            "status": "error",
+            "message": "Internal server error",
+            "error": str(e),
+            "debug": "Error caught in handler"
+        }
+
         return {
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({
-                "error": "Internal server error",
-                "message": str(e),
-                "status": "error"
-            })
+            'body': json.dumps(error_response, indent=2)
         }
 
-# Export handler for Vercel
+# Export for Vercel
 app_handler = handler

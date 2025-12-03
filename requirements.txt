@@ -1,19 +1,2 @@
-# Core dependencies for Z.ai API
+# Minimal dependencies for testing
 requests>=2.31.0
-python-dotenv>=1.0.0
-
-# Web App Dependencies
-Flask>=2.3.0
-Flask-CORS>=4.0.0
-Werkzeug>=2.3.0
-Jinja2>=3.1.0
-MarkupSafe>=2.1.0
-itsdangerous>=2.1.0
-blinker>=1.6.0
-click>=8.1.0
-
-# PWA & Mobile Support
-gunicorn>=21.0.0
-
-# Database
-supabase>=2.0.0
