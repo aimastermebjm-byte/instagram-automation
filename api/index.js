@@ -61,10 +61,10 @@ module.exports = async (req, res) => {
 
     // Default response - serve index.html for all other routes
     const fs = require('fs');
-    const path = require('path');
+    const pathModule = require('path');
 
     try {
-      const indexPath = path.join(__dirname, '..', 'index.html');
+      const indexPath = pathModule.join(__dirname, '..', 'index.html');
       const indexContent = fs.readFileSync(indexPath, 'utf8');
 
       res.setHeader('Content-Type', 'text/html');
@@ -129,13 +129,59 @@ function handleSetup(req, res) {
         });
       }
 
-      // Simulate API key validation (in real implementation, call Z.ai API)
-      setTimeout(() => {
-        res.status(200).json({
-          success: true,
-          message: "API key validated successfully"
+      // Real API key validation with Z.ai
+      if (!api_key) {
+        return res.status(400).json({
+          status: "error",
+          message: "API key is required"
         });
-      }, 500);
+      }
+
+      // Call Z.ai API for validation
+      const https = require('https');
+
+      try {
+        const response = https.post('https://api.z.ai/api/paas/v4/chat/completions', {
+          headers: {
+            'Authorization': `Bearer ${api_key}`,
+            'Content-Type': 'application/json'
+          },
+          json: {
+            model: "glm-4.6",
+            messages: [
+              {
+                role: "user",
+                content: "Test connection"
+              }
+            ],
+            max_tokens: 10,
+            stream: false
+          },
+          timeout: 30000
+        });
+
+        if (response.statusCode === 200) {
+          const responseData = JSON.parse(response.body);
+          if (responseData.choices && responseData.choices[0]) {
+            const testResult = responseData.choices[0].message.content;
+            if (testResult && testResult.trim()) {
+              return res.status(200).json({
+                success: true,
+                message: "API key validated successfully"
+              });
+            }
+          }
+        }
+
+        throw new Error('API validation failed');
+
+      } catch (error) {
+        console.error('Z.ai API error:', error);
+        return res.status(400).json({
+          status: "error",
+          message: "API validation failed: " + error.message
+        });
+      }
 
     } catch (error) {
       console.error('Setup error:', error);
