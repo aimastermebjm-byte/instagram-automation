@@ -1,28 +1,51 @@
 #!/usr/bin/env python3
 """
-Vercel Serverless Function Handler for Instagram Automation
+Simple Vercel Serverless Function Handler
 """
-import os
-import sys
-from pathlib import Path
+import json
 
-# Add the project root to Python path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
-
-# Import the Flask app
-from app import app
-
-# Vercel serverless function handler
 def handler(request):
-    """
-    Vercel serverless function handler
-    """
-    return app(request.environ, lambda status, headers: None)
+    """Simple handler for Vercel serverless function"""
+
+    try:
+        # Get request data
+        method = request.method
+        path = request.path
+
+        # Simple response for testing
+        response_data = {
+            "message": "Instagram Automation API is running!",
+            "method": method,
+            "path": path,
+            "status": "success"
+        }
+
+        # Return successful response
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            },
+            'body': json.dumps(response_data, indent=2)
+        }
+
+    except Exception as e:
+        # Return error response
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                "error": "Internal server error",
+                "message": str(e),
+                "status": "error"
+            })
+        }
 
 # Export handler for Vercel
 app_handler = handler
-
-# For local testing
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
