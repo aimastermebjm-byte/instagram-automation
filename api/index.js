@@ -141,45 +141,75 @@ function handleSetup(req, res) {
       const https = require('https');
 
       try {
-        const response = https.post('https://api.z.ai/api/paas/v4/chat/completions', {
-          headers: {
-            'Authorization': `Bearer ${api_key}`,
-            'Content-Type': 'application/json'
-          },
-          json: {
-            model: "glm-4.6",
-            messages: [
-              {
-                role: "user",
-                content: "Test connection"
-              }
-            ],
-            max_tokens: 10,
-            stream: false
-          },
-          timeout: 30000
+        const postData = JSON.stringify({
+          model: "glm-4.6",
+          messages: [
+            {
+              role: "user",
+              content: "Test connection"
+            }
+          ],
+          max_tokens: 10,
+          stream: false
         });
 
-        if (response.statusCode === 200) {
-          const responseData = JSON.parse(response.body);
-          if (responseData.choices && responseData.choices[0]) {
-            const testResult = responseData.choices[0].message.content;
-            if (testResult && testResult.trim()) {
-              return res.status(200).json({
-                success: true,
-                message: "API key validated successfully"
-              });
-            }
-          }
-        }
+        const options = {
+          hostname: 'api.z.ai',
+          path: '/api/paas/v4/chat/completions',
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${api_key}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData)
+          },
+          timeout: 30000
+        };
 
-        throw new Error('API validation failed');
+        const req = https.request(options, (response) => {
+          let data = '';
+
+          response.on('data', (chunk) => {
+            data += chunk;
+          });
+
+          response.on('end', () => {
+            try {
+              const responseData = JSON.parse(data);
+              if (response.statusCode === 200 && responseData.choices && responseData.choices[0]) {
+                const testResult = responseData.choices[0].message.content;
+                if (testResult && testResult.trim()) {
+                  return res.status(200).json({
+                    success: true,
+                    message: "API key validated successfully"
+                  });
+                }
+              }
+              throw new Error('Invalid response from Z.ai API');
+            } catch (parseError) {
+              console.error('Parse error:', parseError);
+              throw new Error('Failed to parse Z.ai API response');
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          console.error('Request error:', error);
+          throw new Error('Failed to connect to Z.ai API');
+        });
+
+        req.on('timeout', () => {
+          req.destroy();
+          throw new Error('Z.ai API request timeout');
+        });
+
+        req.write(postData);
+        req.end();
 
       } catch (error) {
         console.error('Z.ai API error:', error);
         return res.status(400).json({
-          status: "error",
-          message: "API validation failed: " + error.message
+          error: "API validation failed",
+          message: error.message
         });
       }
 
