@@ -116,29 +116,32 @@ function handleSetup(req, res) {
   req.on('end', () => {
     try {
       const data = JSON.parse(body);
-      const { api_key } = data;
+      let api_key = data.api_key;
+
+      // Also check for API key in header
+      if (!api_key) {
+        api_key = req.headers['x-api-key'];
+      }
 
       if (!api_key) {
         return res.status(400).json({
-          status: "error",
-          message: "API key is required"
+          error: "API key is required"
         });
       }
 
       // Simulate API key validation (in real implementation, call Z.ai API)
       setTimeout(() => {
         res.status(200).json({
-          status: "success",
-          message: "API key validated successfully",
-          api_key_preview: api_key.substring(0, 10) + "..."
+          success: true,
+          message: "API key validated successfully"
         });
-      }, 1000);
+      }, 500);
 
     } catch (error) {
+      console.error('Setup error:', error);
       res.status(400).json({
-        status: "error",
-        message: "Invalid JSON",
-        error: error.message
+        error: "Invalid JSON",
+        message: error.message
       });
     }
   });
