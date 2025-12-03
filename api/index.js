@@ -109,6 +109,16 @@ function handleTestConnection(req, res) {
   });
 }
 
+function handleTopics(req, res) {
+  // Return default Indonesian topics
+  res.status(200).json({
+    status: "success",
+    topics: ["Artificial Intelligence", "Machine Learning", "Digital Marketing",
+             "Social Media Strategy", "Content Creation", "Technology Trends",
+             "Business Innovation", "Startup Life"]
+  });
+}
+
 function handleStartJob(req, res) {
   res.status(200).json({
     status: "success",
