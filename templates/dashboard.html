@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Instagram Automation</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #E4405F;
+            --secondary-color: #8134AF;
+            --success-color: #28A745;
+            --warning-color: #FFC107;
+            --danger-color: #DC3545;
+            --dark-color: #2C3E50;
+            --light-bg: #F8F9FA;
+            --border-color: #E9ECEF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 0;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1.5rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: -2rem -2rem 2rem -2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.primary {
+            background: rgba(228, 68, 95, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.success {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-icon.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-icon.info {
+            background: rgba(131, 52, 175, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6C757D;
+            font-size: 0.9rem;
+        }
+
+        /* Job Creation Card */
+        .job-creation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .topic-chip {
+            display: inline-block;
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .topic-chip:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .topic-chip.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .topic-input {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            background: var(--light-bg);
+            margin-bottom: 1rem;
+        }
+
+        /* Job Progress */
+        .job-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .job-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .job-status.running {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .job-status.completed {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .job-status.failed {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-color);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+                padding-top: 4rem;
+            }
+
+            .top-bar {
+                margin: -1rem -1rem 1rem -1rem;
+                padding: 1rem;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .job-creation-card {
+                padding: 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 5px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fab fa-instagram" style="font-size: 2rem;"></i>
+            <h5 class="mt-2 mb-0">IG Automation</h5>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-home"></i>Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/history" class="nav-link">
+                    <i class="fas fa-history"></i>History
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>Settings
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i>Help
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div>
+                <h4 class="mb-0">Dashboard</h4>
+                <small class="text-muted">Instagram Content Automation</small>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="online-indicator">
+                    <i class="fas fa-wifi me-1"></i>
+                    <span>Connected</span>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="row">
+            <div class="col-md-3 col-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="stat-value" id="totalPosts">0</div>
+                    <div class="stat-label">Total Posts</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-value" id="completedJobs">0</div>
+                    <div class="stat-label">Completed Jobs</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value" id="activeJobs">0</div>
+                    <div class="stat-label">Active Jobs</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon info">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value" id="topicsCovered">0</div>
+                    <div class="stat-label">Topics Covered</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Creation Card -->
+        <div class="job-creation-card fade-in">
+            <h5 class="mb-4">
+                <i class="fas fa-plus-circle me-2"></i>Create New Content
+            </h5>
+
+            <!-- Topic Selection -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">Select Topics</label>
+                <div id="topicChips">
+                    <!-- Topics will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Custom Topic Input -->
+            <div class="topic-input">
+                <i class="fas fa-plus me-2"></i>
+                <input type="text" class="form-control-plaintext" id="customTopic"
+                       placeholder="Type custom topic and press Enter" style="display: inline-block; width: auto;">
+            </div>
+
+            <!-- Options -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Time Range</label>
+                    <select class="form-select" id="timeRange">
+                        <option value="oneDay">Last 24 Hours</option>
+                        <option value="oneWeek">Last Week</option>
+                        <option value="oneMonth">Last Month</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Posts per Topic</label>
+                    <input type="number" class="form-control" id="maxPosts" value="3" min="1" max="10">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Auto-post to Instagram</label>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="autoPost">
+                        <label class="form-check-label" for="autoPost">
+                            Enable auto-posting
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="startJob()">
+                    <i class="fas fa-rocket me-2"></i>Start Creating Content
+                </button>
+                <button class="btn btn-outline-secondary" onclick="clearSelection()">
+                    <i class="fas fa-times me-2"></i>Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Active Jobs -->
+        <div class="fade-in">
+            <h5 class="mb-3">
+                <i class="fas fa-tasks me-2"></i>Active Jobs
+            </h5>
+            <div id="activeJobsContainer">
+                <!-- Active jobs will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="fade-in">
+            <h5 class="mb-3">
+                <i class="fas fa-history me-2"></i>Recent Results
+            </h5>
+            <div id="recentResultsContainer">
+                <!-- Recent results will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        let selectedTopics = new Set();
+        let defaultTopics = [];
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTopics();
+            loadStats();
+            loadActiveJobs();
+            loadRecentResults();
+
+            // Start auto-refresh
+            refreshInterval = setInterval(refreshData, 30000); // 30 seconds
+
+            // Handle custom topic input
+            document.getElementById('customTopic').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    addCustomTopic(this.value.trim());
+                    this.value = '';
+                }
+            });
+        });
+
+        // Load available topics
+        async function loadTopics() {
+            try {
+                const response = await fetch('/api/topics', {
+                    headers: {
+                        'X-API-Key': sessionStorage.getItem('api_key')
+                    }
+                });
+
+                const data = await response.json();
+                defaultTopics = data.default_topics || [];
+                renderTopicChips();
+
+            } catch (error) {
+                console.error('Failed to load topics:', error);
+                showNotification('Failed to load topics', 'error');
+            }
+        }
+
+        // Render topic chips
+        function renderTopicChips() {
+            const container = document.getElementById('topicChips');
+            container.innerHTML = '';
+
+            defaultTopics.forEach(topic => {
+                const chip = document.createElement('span');
+                chip.className = 'topic-chip';
+                chip.textContent = topic;
+                chip.onclick = () => toggleTopic(topic, chip);
+                container.appendChild(chip);
+            });
+        }
+
+        // Toggle topic selection
+        function toggleTopic(topic, element) {
+            if (selectedTopics.has(topic)) {
+                selectedTopics.delete(topic);
+                element.classList.remove('selected');
+            } else {
+                selectedTopics.add(topic);
+                element.classList.add('selected');
+            }
+        }
+
+        // Add custom topic
+        function addCustomTopic(topic) {
+            const container = document.getElementById('topicChips');
+            const chip = document.createElement('span');
+            chip.className = 'topic-chip selected';
+            chip.textContent = topic;
+            chip.onclick = () => toggleTopic(topic, chip);
+            container.appendChild(chip);
+
+            selectedTopics.add(topic);
+        }
+
+        // Clear selection
+        function clearSelection() {
+            selectedTopics.clear();
+            document.querySelectorAll('.topic-chip').forEach(chip => {
+                chip.classList.remove('selected');
+            });
+        }
+
+        // Start job
+        async function startJob() {
+            if (selectedTopics.size === 0) {
+                showNotification('Please select at least one topic', 'warning');
+                return;
+            }
+
+            const jobData = {
+                topics: Array.from(selectedTopics),
+                options: {
+                    time_range: document.getElementById('timeRange').value,
+                    max_posts: parseInt(document.getElementById('maxPosts').value),
+                    auto_post: document.getElementById('autoPost').checked
+                }
+            };
+
+            try {
+                const response = await fetch('/api/start-job', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': sessionStorage.getItem('api_key')
+                    },
+                    body: JSON.stringify(jobData)
+                });
+
+                const result = await response.json();
+
+                if (result.job_id) {
+                    showNotification('Job started successfully!', 'success');
+                    clearSelection();
+                    loadActiveJobs();
+
+                    // Auto-refresh active jobs more frequently during processing
+                    setTimeout(loadActiveJobs, 1000);
+                } else {
+                    throw new Error(result.error || 'Failed to start job');
+                }
+
+            } catch (error) {
+                console.error('Failed to start job:', error);
+                showNotification('Failed to start job: ' + error.message, 'error');
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/jobs', {
+                    headers: {
+                        'X-API-Key': sessionStorage.getItem('api_key')
+                    }
+                });
+
+                const data = await response.json();
+                updateStats(data);
+
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Update statistics display
+        function updateStats(data) {
+            const activeJobs = data.active_jobs || {};
+            const completedJobs = data.completed_jobs || {};
+
+            let totalPosts = 0;
+            let completedCount = 0;
+            let activeCount = Object.keys(activeJobs).length;
+            let topics = new Set();
+
+            // Count completed jobs and posts
+            Object.values(completedJobs).forEach(result => {
+                completedCount++;
+                if (result.posts) {
+                    totalPosts += result.posts.length;
+                    result.posts.forEach(post => topics.add(post.topic));
+                }
+            });
+
+            // Count topics from active jobs
+            Object.values(activeJobs).forEach(job => {
+                if (job.topics_processed) {
+                    job.topics_processed.forEach(topic => topics.add(topic));
+                }
+            });
+
+            document.getElementById('totalPosts').textContent = totalPosts;
+            document.getElementById('completedJobs').textContent = completedCount;
+            document.getElementById('activeJobs').textContent = activeCount;
+            document.getElementById('topicsCovered').textContent = topics.size;
+        }
+
+        // Load active jobs
+        async function loadActiveJobs() {
+            try {
+                const response = await fetch('/api/jobs', {
+                    headers: {
+                        'X-API-Key': sessionStorage.getItem('api_key')
+                    }
+                });
+
+                const data = await response.json();
+                renderActiveJobs(data.active_jobs || {});
+                updateStats(data);
+
+            } catch (error) {
+                console.error('Failed to load active jobs:', error);
+            }
+        }
+
+        // Render active jobs
+        function renderActiveJobs(activeJobs) {
+            const container = document.getElementById('activeJobsContainer');
+            container.innerHTML = '';
+
+            const jobIds = Object.keys(activeJobs);
+
+            if (jobIds.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3">No active jobs</div>';
+                return;
+            }
+
+            jobIds.forEach(jobId => {
+                const job = activeJobs[jobId];
+                const jobElement = createJobElement(jobId, job);
+                container.appendChild(jobElement);
+            });
+        }
+
+        // Create job element
+        function createJobElement(jobId, job) {
+            const div = document.createElement('div');
+            div.className = 'job-item';
+            div.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <strong>Job ${jobId.substring(0, 8)}...</strong>
+                        ${job.current_topic ? `<span class="ms-2 text-muted">(${job.current_topic})</span>` : ''}
+                    </div>
+                    <div class="job-status ${job.status}">
+                        ${job.status.toUpperCase()}
+                    </div>
+                </div>
+                ${job.message ? `<div class="text-muted mb-2">${job.message}</div>` : ''}
+                ${job.progress !== undefined ? `
+                    <div class="progress">
+                        <div class="progress-bar" style="width: ${job.progress}%"></div>
+                    </div>
+                    <small class="text-muted">${Math.round(job.progress)}% complete</small>
+                ` : ''}
+                ${job.error ? `<div class="text-danger mt-2">Error: ${job.error}</div>` : ''}
+            `;
+
+            // Auto-refresh if job is running
+            if (job.status === 'running') {
+                setTimeout(() => loadActiveJobs(), 2000);
+            }
+
+            return div;
+        }
+
+        // Load recent results
+        async function loadRecentResults() {
+            try {
+                const response = await fetch('/api/jobs', {
+                    headers: {
+                        'X-API-Key': sessionStorage.getItem('api_key')
+                    }
+                });
+
+                const data = await response.json();
+                renderRecentResults(data.completed_jobs || {});
+
+            } catch (error) {
+                console.error('Failed to load recent results:', error);
+            }
+        }
+
+        // Render recent results
+        function renderRecentResults(completedJobs) {
+            const container = document.getElementById('recentResultsContainer');
+            container.innerHTML = '';
+
+            const jobIds = Object.keys(completedJobs).slice(-5).reverse(); // Last 5 jobs
+
+            if (jobIds.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3">No completed jobs</div>';
+                return;
+            }
+
+            jobIds.forEach(jobId => {
+                const result = completedJobs[jobId];
+                const resultElement = createResultElement(jobId, result);
+                container.appendChild(resultElement);
+            });
+        }
+
+        // Create result element
+        function createResultElement(jobId, result) {
+            const div = document.createElement('div');
+            div.className = 'job-item';
+            div.style.borderLeftColor = 'var(--success-color)';
+
+            div.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <strong>Completed Job</strong>
+                        <span class="ms-2 text-muted">${result.posts ? result.posts.length : 0} posts created</span>
+                    </div>
+                    <div class="job-status completed">SUCCESS</div>
+                </div>
+                <div class="text-muted">
+                    Topics: ${result.posts ? [...new Set(result.posts.map(p => p.topic))].join(', ') : 'N/A'}
+                </div>
+                ${result.filename ? `
+                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="downloadResults('${result.filename}')">
+                        <i class="fas fa-download me-1"></i>Download
+                    </button>
+                ` : ''}
+            `;
+
+            return div;
+        }
+
+        // Download results
+        function downloadResults(filename) {
+            window.open(`/api/download/${filename}`, '_blank');
+        }
+
+        // Refresh all data
+        function refreshData() {
+            loadStats();
+            loadActiveJobs();
+            loadRecentResults();
+            showNotification('Data refreshed', 'info');
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            // Simple notification - you can use a proper toast library
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // Toggle sidebar (mobile)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Show settings
+        function showSettings() {
+            alert('Settings feature coming soon!');
+        }
+
+        // Show help
+        function showHelp() {
+            alert(`
+Dashboard Help:
+
+1. Creating Content:
+   • Select topics from the chips or add custom topics
+   • Choose time range and number of posts per topic
+   • Enable auto-posting if configured
+   • Click "Start Creating Content" to begin
+
+2. Monitoring Jobs:
+   • Active jobs show real-time progress
+   • Jobs automatically refresh every 30 seconds
+   • Download results when completed
+
+3. Statistics:
+   • Track total posts created
+   • Monitor job completion rates
+   • View topic coverage
+
+Need more help? Check the documentation.
+            `);
+        }
+
+        // Check online status
+        function updateOnlineStatus() {
+            const indicator = document.querySelector('.online-indicator');
+            if (navigator.onLine) {
+                indicator.innerHTML = '<i class="fas fa-wifi me-1"></i><span>Connected</span>';
+            } else {
+                indicator.innerHTML = '<i class="fas fa-wifi-slash me-1"></i><span>Offline</span>';
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

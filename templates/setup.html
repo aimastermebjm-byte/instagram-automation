@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup - Instagram Automation</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #E4405F;
+            --secondary-color: #8134AF;
+            --success-color: #28A745;
+            --warning-color: #FFC107;
+            --danger-color: #DC3545;
+            --dark-color: #2C3E50;
+            --light-bg: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .setup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .setup-logo {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .setup-title {
+            color: var(--dark-color);
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .setup-subtitle {
+            color: #6C757D;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #E9ECEF;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(228, 68, 95, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(228, 68, 95, 0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(228, 68, 95, 0.4);
+        }
+
+        .info-box {
+            background: var(--light-bg);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box h6 {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box p {
+            color: #6C757D;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #E9ECEF;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #E9ECEF;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-title {
+            font-size: 0.8rem;
+            color: #6C757D;
+        }
+
+        .step.active .step-title {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: #6C757D;
+            margin-top: 0.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #6C757D;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li i {
+            color: var(--success-color);
+            width: 20px;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .setup-container {
+                padding: 1rem;
+            }
+
+            .setup-card {
+                padding: 2rem;
+            }
+
+            .step-indicator {
+                margin-bottom: 1.5rem;
+            }
+
+            .step-title {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <div class="setup-logo">
+                    <i class="fab fa-instagram"></i>
+                </div>
+                <h1 class="setup-title">Instagram Automation</h1>
+                <p class="setup-subtitle">Setup your API key to get started</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">API Key</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Validate</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Ready</div>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div class="alert alert-danger" id="errorAlert" style="display: none;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="errorMessage"></span>
+            </div>
+
+            <div class="alert alert-success" id="successAlert" style="display: none;">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successMessage"></span>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <h6><i class="fas fa-info-circle me-2"></i>What is Z.ai API?</h6>
+                <p>Z.ai provides powerful AI capabilities for content creation including:</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check me-2"></i>Text generation for engaging captions</li>
+                    <li><i class="fas fa-check me-2"></i>Image generation for Instagram visuals</li>
+                    <li><i class="fas fa-check me-2"></i>Web search for news discovery</li>
+                    <li><i class="fas fa-check me-2"></i>Content extraction from news sources</li>
+                </ul>
+            </div>
+
+            <!-- Setup Form -->
+            <form id="setupForm">
+                <div class="form-group">
+                    <label for="apiKey" class="form-label">
+                        <i class="fas fa-key me-2"></i>Z.ai API Key
+                    </label>
+                    <input type="password" class="form-control" id="apiKey" placeholder="Enter your Z.ai API key" required>
+                    <div class="help-text">
+                        Get your API key from <a href="https://z.ai" target="_blank">z.ai</a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="instagramApi">
+                        <label class="form-check-label" for="instagramApi">
+                            I have Instagram Business Account (Optional)
+                        </label>
+                    </div>
+                    <div class="help-text">
+                        Required for auto-posting to Instagram
+                    </div>
+                </div>
+
+                <!-- Instagram API Options (Hidden by default) -->
+                <div id="instagramOptions" style="display: none;">
+                    <div class="form-group">
+                        <label for="instagramToken" class="form-label">
+                            <i class="fab fa-instagram me-2"></i>Instagram Access Token
+                        </label>
+                        <input type="password" class="form-control" id="instagramToken" placeholder="Instagram Graph API Token">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessAccountId" class="form-label">Business Account ID</label>
+                        <input type="text" class="form-control" id="businessAccountId" placeholder="Your Instagram Business Account ID">
+                    </div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Validating...</span>
+                    </div>
+                    <p class="mt-2 mb-0">Validating API connection...</p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary" id="setupBtn">
+                        <i class="fas fa-rocket me-2"></i>Setup & Start Creating Content
+                    </button>
+                    <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+            </form>
+
+            <!-- Help Section -->
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    Need help? Check our <a href="#" onclick="showHelp()">setup guide</a>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Show/hide Instagram API options
+        document.getElementById('instagramApi').addEventListener('change', function() {
+            const instagramOptions = document.getElementById('instagramOptions');
+            if (this.checked) {
+                instagramOptions.style.display = 'block';
+            } else {
+                instagramOptions.style.display = 'none';
+            }
+        });
+
+        // Form submission
+        document.getElementById('setupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const apiKey = document.getElementById('apiKey').value;
+            const hasInstagram = document.getElementById('instagramApi').checked;
+
+            if (!apiKey) {
+                showError('API Key is required');
+                return;
+            }
+
+            // Step 2: Validate
+            updateStep(2);
+
+            try {
+                showLoading(true);
+                hideAlerts();
+
+                // Prepare API data
+                const apiData = {
+                    api_key: apiKey,
+                    instagram_config: hasInstagram ? {
+                        access_token: document.getElementById('instagramToken').value,
+                        business_account_id: document.getElementById('businessAccountId').value
+                    } : null
+                };
+
+                // Call setup API
+                const response = await fetch('/api/setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify(apiData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Step 3: Ready
+                    updateStep(3);
+                    showSuccess('Setup successful! Redirecting to dashboard...');
+
+                    // Store in session
+                    sessionStorage.setItem('api_key', apiKey);
+                    if (hasInstagram) {
+                        sessionStorage.setItem('instagram_config', JSON.stringify(apiData.instagram_config));
+                    }
+
+                    // Redirect to dashboard after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+
+                } else {
+                    throw new Error(result.error || 'Setup failed');
+                }
+
+            } catch (error) {
+                showError(error.message || 'Setup failed. Please check your API key and try again.');
+                updateStep(1); // Back to step 1
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        function updateStep(activeStep) {
+            // Remove active class from all steps
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Add completed class to previous steps
+            for (let i = 1; i < activeStep; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+
+            // Add active class to current step
+            document.getElementById(`step${activeStep}`).classList.add('active');
+        }
+
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            const button = document.getElementById('setupBtn');
+
+            if (show) {
+                spinner.classList.add('active');
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Validating...';
+            } else {
+                spinner.classList.remove('active');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-rocket me-2"></i>Setup & Start Creating Content';
+            }
+        }
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+
+            errorMessage.textContent = message;
+            errorAlert.style.display = 'block';
+            document.getElementById('successAlert').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successAlert = document.getElementById('successAlert');
+            const successMessage = document.getElementById('successMessage');
+
+            successMessage.textContent = message;
+            successAlert.style.display = 'block';
+            document.getElementById('errorAlert').style.display = 'none';
+        }
+
+        function hideAlerts() {
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('successAlert').style.display = 'none';
+        }
+
+        function showHelp() {
+            alert(`
+Setup Guide:
+
+1. Get Z.ai API Key:
+   • Visit https://z.ai
+   • Sign up and get API key
+   • GLM Coding Plan recommended ($3/month)
+
+2. Instagram Setup (Optional):
+   • Convert to Instagram Business Account
+   • Create Facebook App at developers.facebook.com
+   • Add Instagram Basic Display API
+   • Get access token and business account ID
+
+3. Start Creating:
+   • Enter topics for news discovery
+   • Let AI create captions and images
+   • Schedule posts for optimal times
+   • Track performance and growth
+
+Need more help? Contact support.
+            `);
+        }
+
+        // Check if already configured
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKey = sessionStorage.getItem('api_key');
+            if (apiKey) {
+                // Go directly to dashboard
+                window.location.href = '/dashboard';
+            }
+        });
+
+        // Test API connection on key input (debounced)
+        let apiTestTimeout;
+        document.getElementById('apiKey').addEventListener('input', function() {
+            clearTimeout(apiTestTimeout);
+
+            if (this.value.length > 20) {
+                apiTestTimeout = setTimeout(() => {
+                    testAPIConnection(this.value);
+                }, 1000);
+            }
+        });
+
+        async function testAPIConnection(apiKey) {
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.zai && result.zai.success) {
+                    document.getElementById('apiKey').style.borderColor = '#28A745';
+                    showHelpText('API key looks good!', 'success');
+                } else {
+                    document.getElementById('apiKey').style.borderColor = '#DC3545';
+                    showHelpText('Invalid API key', 'error');
+                }
+            } catch (error) {
+                // Ignore errors during typing
+            }
+        }
+
+        function showHelpText(message, type) {
+            const helpText = document.querySelector('[for="apiKey"] + .help-text');
+            helpText.innerHTML = message;
+            helpText.style.color = type === 'success' ? '#28A745' : '#DC3545';
+        }
+    </script>
+</body>
+</html>

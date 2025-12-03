@@ -1,0 +1,95 @@
+{
+  "name": "Instagram Automation",
+  "short_name": "IG Automator",
+  "description": "Automated Instagram content creation powered by AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#E4405F",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "id",
+  "categories": ["productivity", "social", "business"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwXzFfMSkiLz4KPHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI1NiIgeT0iNTYiPgo8cGF0aCBkPSJNNDAgMTBDMjMgMSAyMyA4IDQwIDhTNDEgMTAgNTggMTBDNjQgMSA3NyAyMyA3NyA0MEM3NyA1MSA2NCA3OSA1MCA4MkM0OSA4MiA0MyA4MyA0MSA4M0MzNiA4MyAyNiA4MiAyNiA4MkM0OSA3OSAyNyA2MSA1MSA1OEM1MCA1OCA1NiA1NSA1MSA1NEM0NSA1MSA1MSA1MSA0NSA1OEMzMyA2MSAzOSA1OCAzMyA2MUMzMSA2MiAyNSA2MyAyNSA2M0MxMiA1NiA0IDQ2IDQgMzVDNCAyNSAxNSA5IDMzIDEwQzM3IDEwIDM4IDEwIDQwIDEwWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF8xXzEiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRTQ0MDVGIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgxMzRBRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjZ3JhZGllbnQwXzJfMSkiLz4KPHN2ZyB3aWR0aD0iMjEyIiBoZWlnaHQ9IjIxMiIgdmlld0JveD0iMCAwIDIxMiAyMTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMTUwIiB5PSIxNTAiPgo8cGF0aCBkPSJNMTA2IDIwQzU3IDIgNjEgMCA2MCA2MEMxIDU3IDEgMTA2IDYwIDEwNkM1MSAyMjEgNjcgMjQzIDUzIDI3OEM0OCAyODUgMzEgMjg2IDMyIDI4MkM1NSAyNjUgMTA2IDI0MSAxMDYgMjQxQzE2MiAyNjUgMTQzIDI4MiAxNDggMjgyQzE2OSAyODYgMTUzIDI4NSAxNDcgMjc4QzEzMSAyNDMgMTU0IDIyMSAxNTIgMTE5QzE1MiA2IDE1MSAyIDE1NSAyQzE4MSAyIDE1NSAyMSAxNTYgMjFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwXzJfMSIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFNDQwNUYiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODEzNEFGIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Content",
+      "short_name": "Create",
+      "description": "Start creating Instagram content",
+      "url": "/dashboard?action=create",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiNFNDQwNUYiLz4KPHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIyNCIgeT0iMjQiPgo8cGF0aCBkPSJNMjQgNEMxNS41IDQgOCAxMS41IDggMjBWMjhINEMxNy41IDI4IDI0IDIxLjUgMjQgMTZWMjRIMjhWMThDMjggOS41IDIwLjUgNCAxMiA0SDI0WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cjwvc3ZnPgo=",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View History",
+      "short_name": "History",
+      "description": "View content creation history",
+      "url": "/history",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiM4MTM0QUYiLz4KPHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIyNCIgeT0iMjQiPgo8cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJWMjhWNDJDMjAgNDggMjggNDggNDBWNDhIMTJDNi40OCA0OCAyIDQzLjUyIDIgMzhWMjJWMTJDMiA2LjQ4IDYuNDggMiAxMiAyWk0xMiAyMkg0MFY0MEgxMlYyMloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4=",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjU2OCIgdmlld0JveD0iMCAwIDMyMCA1NjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iNTY4IiBmaWxsPSIjRjhGOUZBIi8+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iODAiIGZpbGw9InVybCgjZ3JhZGllbnQwXzMxXzEpIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iNTAiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RGFzaGJvYXJkPC90ZXh0Pgo8cmVjdCB4PSIxMCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjIwIiB5PSIxMzAiIGZpbGw9IiMyQzNFNTAiIGZvbnQtc2l6ZT0iMTQiPlRvdGFsIFBvc3RzOiA2ODk8L3RleHQ+CjxyZWN0IHg9IjEwIiB5PSIyMDAiIHdpZHRoPSIxNDUiIGhlaWdodD0iODAiIHJ4PSIxMCIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iMjAiIHk9IjI0MCIgZmlsbD0iIzJDM0U1MCIgZm9udC1zaXplPSIxNCI+Q29tcGxldGVkOiA0NTI8L3RleHQ+CjxyZWN0IHg9IjE2NSIgeT0iMjAwIiB3aWR0aD0iMTQ1IiBoZWlnaHQ9IjgwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjE3NSIgeT0iMjQwIiBmaWxsPSIjMkMzRTUwIiBmb250LXNpemU9IjE0Ij5BY3RpdmU6IDU8L3RleHQ+CjxyZWN0IHg9IjEwIiB5PSIzMDAiIHdpZHRoPSIzMDAiIGhlaWdodD0iMTIwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+Cjx0ZXh0IHg9IjIwIiB5PSIzMzAiIGZpbGw9IiMyQzNFNTAiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIj5DcmVhdGUgTmV3IENvbnRlbnQ8L3RleHQ+CjxyZWN0IHg9IjIwIiB5PSIzNTAiIHdpZHRoPSIyODAiIGhlaWdodD0iNDAiIHJ4PSI1IiBmaWxsPSIjRjhGOUZBIiBzdHJva2U9IiNFOTBFQ0YiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIzMCIgeT0iMzc1IiBmaWxsPSIjNkM3NUQ3IiBmb250LXNpemU9IjEyIj5TZWxlY3QgVG9waWNzIGhlcmUuLi48L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF8zMV8xIiB4MT0iMCIgeTE9IjAiIHgyPSIzMjAiIHkyPSI4MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRTQ0MDVGIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgxMzRBRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg==",
+      "sizes": "320x568",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTM2OCIgaGVpZ2h0PSIxMDI0IiB2aWV3Qm94PSIwIDAgMTM2OCAxMDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTM2OCIgaGVpZ2h0PSIxMDI0IiBmaWxsPSIjRjhGOUZBIi8+CjxyZWN0IHdpZHRoPSIxMzY4IiBoZWlnaHQ9IjgwIiBmaWxsPSJ1cmwoI2dyYWRpZW50MF8zMl8xKSIvPgo8dGV4dCB4PSI2ODQiIHk9IjUwIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkRhc2hib2FyZDwvdGV4dD4KPHJlY3QgeD0iNDAiIHk9IjEyMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxNSIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iNjAiIHk9IjE3MCIgZmlsbD0iIzJDM0U1MCIgZm9udC1zaXplPSIxOCI+VG90YWwgUG9zdHM6IDEsMjQ1PC90ZXh0Pgo8cmVjdCB4PSIzNjAiIHk9IjEyMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxNSIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iMzgwIiB5PSIxNzAiIGZpbGw9IiMyQzNFNTAiIGZvbnQtc2l6ZT0iMTgiPkNvbXBsZXRlZDogODUyPC90ZXh0Pgo8cmVjdCB4PSI2ODAiIHk9IjEyMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxNSIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iNzAwIiB5PSIxNzAiIGZpbGw9IiMyQzNFNTAiIGZvbnQtc2l6ZT0iMTgiPkFjdGl2ZTogMTI8L3RleHQ+CjxyZWN0IHg9IjEwMDAiIHk9IjEyMCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIxNSIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iMTAyMCIgeT0iMTcwIiBmaWxsPSIjMkMzRTUwIiBmb250LXNpemU9IjE4Ij5Ub3BpY3M6IDQ1PC90ZXh0Pgo8cmVjdCB4PSI0MCIgeT0iMjYwIiB3aWR0aD0iMTI4OCIgaGVpZ2h0PSIzMDAiIHJ4PSIxNSIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iNjAiIHk9IjMwMCIgZmlsbD0iIzJDM0U1MCIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9ImJvbGQiPkNyZWF0ZSBOZXcgQ29udGVudDwvdGV4dD4KPHJlY3QgeD0iNjAiIHk9IjMyMCIgd2lkdGg9IjEyMDAiIGhlaWdodD0iODAiIHJ4PSIxMCIgZmlsbD0iI0Y4RjlGQSIgc3Ryb2tlPSIjRTlFRUNGIiBzdHJva2Utd2lkdGg9IjIiLz4KPHRleHQgeD0iODAiIHk9IjM2MCIgZmlsbD0iIzZDNzc1RyIgZm9udC1zaXplPSIxNCI+U2VsZWN0IFRvcGljczogVGVrbm9sb2dpLCBCaXNuaXMsIEtlc2VoYXRhbiwgT2xhaHJhZ2EsIEtlbXBhcmlhbiwgS2F0ZWdvcmlzLCBUcmF2ZWwsIEt1bGluZXIsIEZhc2hpb248L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF8zMl8xIiB4MT0iMCIgeTE9IjAiIHgyPSIxMzY4IiB5Mj0iODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0U0NDA1RiIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4MTM0QUYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=",
+      "sizes": "1368x1024",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "protocol_handlers": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "topic",
+      "text": "description",
+      "url": "news_url"
+    }
+  },
+  "capture_links": "new-client",
+  "scope_extensions": [],
+  "orientation_lock": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "platform": ["web"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}

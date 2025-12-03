@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "instagram-automation",
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app.py"
+    }
+  ],
+  "functions": {
+    "app.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "installCommand": "pip install -r requirements.txt",
+  "framework": null,
+  "outputDirectory": ".",
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  }
+}
