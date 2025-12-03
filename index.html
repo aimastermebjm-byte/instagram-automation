@@ -340,7 +340,7 @@
     </div>
 
     <script>
-              const API_BASE = '';
+              const API_BASE = window.location.origin;
         let selectedTopics = new Set();
         let apiKey = localStorage.getItem('zai_api_key') || '';
         let activeJobs = {};
@@ -386,6 +386,10 @@
                         chip.onclick = () => toggleTopic(chip, topic);
                         container.appendChild(chip);
                     });
+
+                    // Show container and enable form after loading topics
+                    container.style.display = 'flex';
+                    document.getElementById('customTopics').disabled = false;
                 } else {
                     console.warn('No default topics found in response');
                 }
