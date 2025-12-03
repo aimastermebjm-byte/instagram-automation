@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Automation - Node.js Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: "🚀";
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card h3::before {
+            content: "✅";
+            font-size: 1.2em;
+        }
+
+        .result-section {
+            margin-bottom: 20px;
+        }
+
+        .result-section h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+            line-height: 1.6;
+        }
+
+        .image-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid #e1e5e9;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.0.1);
+        }
+
+        .hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .hashtag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Instagram Automation</h1>
+            <p>Powered by Z.ai API - Node.js Edition 🚀</p>
+        </div>
+
+        <!-- Setup Card -->
+        <div class="card" id="setupCard">
+            <h2>API Configuration</h2>
+            <div class="form-group">
+                <label for="apiKey">Z.ai API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter your Z.ai API key">
+            </div>
+            <button class="btn" onclick="setupAPI()">
+                <span>🔗</span>
+                <span>Connect API</span>
+            </button>
+            <div id="setupStatus"></div>
+        </div>
+
+        <!-- URL Content Generator Card -->
+        <div class="card hidden" id="urlCard">
+            <h2>URL Content Generator</h2>
+
+            <div class="form-group">
+                <label for="topic">🏷️ Topic</label>
+                <select id="topic">
+                    <option value="">Select a topic...</option>
+                    <option value="teknologi">Teknologi</option>
+                    <option value="bisnis">Bisnis</option>
+                    <option value="kesehatan">Kesehatan</option>
+                    <option value="olahraga">Olahraga</option>
+                    <option value="hiburan">Hiburan</option>
+                    <option value="politik">Politik</option>
+                    <option value="sains">Sains</option>
+                    <option value="travel">Travel</option>
+                    <option value="kuliner">Kuliner</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="startup">Startup</option>
+                    <option value="artificial intelligence">Artificial Intelligence</option>
+                    <option value="cryptocurrency">Cryptocurrency</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="url">🔗 News URL</label>
+                <input type="url" id="url" placeholder="https://example.com/news-article">
+            </div>
+
+            <button class="btn btn-success" onclick="generateContent()">
+                <span id="btnIcon">🚀</span>
+                <span id="btnText">Generate Instagram Content</span>
+            </button>
+            <div id="generateStatus"></div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card hidden" id="resultsCard">
+            <h2>Generated Content Results</h2>
+            <div id="contentResults"></div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card hidden" id="historyCard">
+            <h2>Generation History</h2>
+            <div id="historyResults"></div>
+            <button class="btn btn-secondary" onclick="loadHistory()">
+                <span>🔄</span>
+                <span>Refresh History</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let apiKey = localStorage.getItem('zai_api_key') || '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (apiKey) {
+                document.getElementById('apiKey').value = apiKey;
+                setupAPI();
+            }
+            loadHistory();
+        });
+
+        async function setupAPI() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const key = apiKeyInput.value.trim();
+
+            if (!key) {
+                showStatus('setupStatus', 'Please enter your API key', 'error');
+                return;
+            }
+
+            const button = document.querySelector('#setupCard .btn');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="loading"></span><span>Connecting...</span>';
+            button.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/setup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ api_key: key })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    apiKey = key;
+                    localStorage.setItem('zai_api_key', key);
+                    showStatus('setupStatus', 'API connected successfully!', 'success');
+
+                    // Show URL generator card
+                    document.getElementById('urlCard').classList.remove('hidden');
+                    document.getElementById('historyCard').classList.remove('hidden');
+                } else {
+                    showStatus('setupStatus', data.error || 'Failed to connect API', 'error');
+                }
+            } catch (error) {
+                showStatus('setupStatus', 'Connection failed: ' + error.message, 'error');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function generateContent() {
+            const topic = document.getElementById('topic').value;
+            const url = document.getElementById('url').value;
+
+            if (!topic || !url) {
+                showStatus('generateStatus', 'Please fill in both topic and URL', 'error');
+                return;
+            }
+
+            const button = document.querySelector('#urlCard .btn-success');
+            const btnIcon = document.getElementById('btnIcon');
+            const btnText = document.getElementById('btnText');
+
+            // Show loading state
+            btnIcon.innerHTML = '<span class="loading"></span>';
+            btnText.textContent = 'Generating Content...';
+            button.disabled = true;
+
+            // Clear previous results
+            document.getElementById('contentResults').innerHTML = '';
+            showStatus('generateStatus', 'Starting content generation...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ topic, url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('generateStatus', 'Content generated successfully!', 'success');
+                    displayResults(data.content);
+
+                    // Show results card
+                    document.getElementById('resultsCard').classList.remove('hidden');
+
+                    // Refresh history
+                    setTimeout(loadHistory, 1000);
+                } else {
+                    showStatus('generateStatus', `Error: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                showStatus('generateStatus', `Generation failed: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                btnIcon.innerHTML = '🚀';
+                btnText.textContent = 'Generate Instagram Content';
+                button.disabled = false;
+            }
+        }
+
+        function displayResults(content) {
+            const resultsDiv = document.getElementById('contentResults');
+
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <h3>Generated Instagram Content</h3>
+
+                    <div class="result-section">
+                        <h4>📰 Topic</h4>
+                        <div class="result-content">
+                            <strong>${content.topic}</strong><br>
+                            <small>Source: <a href="${content.originalUrl}" target="_blank">${content.originalUrl}</a></small>
+                        </div>
+                    </div>
+
+                    <div class="result-section">
+                        <h4>📝 News Summary</h4>
+                        <div class="result-content">
+                            ${content.newsSummary.replace(/\\n/g, '<br>')}
+                        </div>
+                    </div>
+
+                    <div class="result-section">
+                        <h4>📱 Instagram Caption</h4>
+                        <div class="result-content">
+                            ${content.generatedCaption.replace(/\\n/g, '<br>')}
+                        </div>
+                    </div>
+
+                    <div class="result-section">
+                        <h4>🏷️ Hashtags</h4>
+                        <div class="hashtags">
+                            ${content.hashtags.map(tag => `<span class="hashtag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="result-section">
+                        <h4>🎨 Generated Image</h4>
+                        <div class="image-preview">
+                            <img src="${content.generatedImageUrl}" alt="Generated Instagram image" />
+                        </div>
+                        <div class="result-content">
+                            <strong>Image URL:</strong><br>
+                            <a href="${content.generatedImageUrl}" target="_blank">${content.generatedImageUrl}</a>
+                        </div>
+                    </div>
+
+                    <div class="result-section">
+                        <h4>📅 Created At</h4>
+                        <div class="result-content">
+                            ${new Date(content.createdAt).toLocaleString()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/api/history`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayHistory(data.history);
+                } else {
+                    console.error('Failed to load history:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function displayHistory(history) {
+            const historyDiv = document.getElementById('historyResults');
+
+            if (history.length === 0) {
+                historyDiv.innerHTML = '<p style="text-align: center; color: #666;">No generation history yet 📭</p>';
+                return;
+            }
+
+            historyDiv.innerHTML = history.map(item => `
+                <div class="result-content" style="margin-bottom: 10px; padding: 10px; border-left: 3px solid #667eea;">
+                    <strong>${item.topic}</strong>
+                    <small style="float: right;">${new Date(item.createdAt).toLocaleString()}</small>
+                    <br>
+                    ${item.hasImage ? '🖼️ Has Image' : '📝 Text Only'}
+                </div>
+            `).join('');
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.innerHTML = '';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
