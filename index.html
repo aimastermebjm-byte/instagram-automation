@@ -356,17 +356,39 @@
 
         async function loadTopics() {
             try {
-                const response = await fetch(`${API_BASE}/api/topics`);
+                // Don't load topics until API key is set
+                if (!apiKey) {
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/api/topics`, {
+                    headers: {
+                        'X-API-Key': apiKey
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('API key required to load topics');
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
 
                 const container = document.getElementById('topicsContainer');
-                data.default_topics.forEach(topic => {
-                    const chip = document.createElement('div');
-                    chip.className = 'topic-chip';
-                    chip.textContent = topic;
-                    chip.onclick = () => toggleTopic(chip, topic);
-                    container.appendChild(chip);
-                });
+                if (data.default_topics && Array.isArray(data.default_topics)) {
+                    data.default_topics.forEach(topic => {
+                        const chip = document.createElement('div');
+                        chip.className = 'topic-chip';
+                        chip.textContent = topic;
+                        chip.onclick = () => toggleTopic(chip, topic);
+                        container.appendChild(chip);
+                    });
+                } else {
+                    console.warn('No default topics found in response');
+                }
             } catch (error) {
                 console.error('Failed to load topics:', error);
             }
@@ -399,13 +421,16 @@
             try {
                 const response = await fetch(`${API_BASE}/api/setup`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': key
+                    },
                     body: JSON.stringify({ api_key: key })
                 });
 
                 const data = await response.json();
 
-                if (data.status === 'success') {
+                if (response.ok && data.success) {
                     apiKey = key;
                     localStorage.setItem('zai_api_key', key);
                     showStatus('setupStatus', 'API connected successfully!', 'success');
@@ -414,11 +439,15 @@
                     document.getElementById('jobCard').classList.remove('hidden');
                     document.getElementById('jobsCard').classList.remove('hidden');
 
+                    // Load topics now that API key is set
+                    await loadTopics();
+
                     // Start refreshing jobs
                     refreshJobs();
                     setInterval(refreshJobs, 5000); // Refresh every 5 seconds
                 } else {
-                    showStatus('setupStatus', data.message || 'Failed to connect API', 'error');
+                    const errorMessage = data.error || data.message || 'Failed to connect API';
+                    showStatus('setupStatus', errorMessage, 'error');
                 }
             } catch (error) {
                 showStatus('setupStatus', 'Connection failed: ' + error.message, 'error');
@@ -454,7 +483,10 @@
             try {
                 const response = await fetch(`${API_BASE}/api/start-job`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
                     body: JSON.stringify({
                         topics: allTopics,
                         options: { max_posts: maxPosts, time_range: timeRange }
@@ -463,7 +495,7 @@
 
                 const data = await response.json();
 
-                if (data.status === 'success') {
+                if (response.ok && data.job_id) {
                     showStatus('jobStatus', `Job started successfully! Job ID: ${data.job_id}`, 'success');
 
                     // Clear form
@@ -478,7 +510,8 @@
                     // Refresh jobs
                     setTimeout(refreshJobs, 1000);
                 } else {
-                    showStatus('jobStatus', data.message || 'Failed to start job', 'error');
+                    const errorMessage = data.error || data.message || 'Failed to start job';
+                    showStatus('jobStatus', errorMessage, 'error');
                 }
             } catch (error) {
                 showStatus('jobStatus', 'Failed to start job: ' + error.message, 'error');
@@ -490,7 +523,24 @@
 
         async function refreshJobs() {
             try {
-                const response = await fetch(`${API_BASE}/api/jobs`);
+                if (!apiKey) {
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/api/jobs`, {
+                    headers: {
+                        'X-API-Key': apiKey
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('API key required to refresh jobs');
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
 
                 const jobsList = document.getElementById('jobsList');
@@ -507,11 +557,11 @@
                     const jobElement = document.createElement('div');
                     jobElement.className = 'job-item';
                     jobElement.innerHTML = `
-                        <h4>Job: ${jobId}</h4>
+                        <h4>Job: ${jobId.substring(0, 8)}...</h4>
                         <p><strong>Status:</strong> ${job.status}</p>
-                        <p><strong>Progress:</strong> ${Math.round(job.progress)}%</p>
+                        <p><strong>Progress:</strong> ${Math.round(job.progress || 0)}%</p>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${job.progress}%"></div>
+                            <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
                         </div>
                         <p><strong>Current Topic:</strong> ${job.current_topic || 'N/A'}</p>
                         <p><strong>Message:</strong> ${job.message}</p>

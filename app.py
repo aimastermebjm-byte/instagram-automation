@@ -189,8 +189,11 @@ def history():
 @app.route('/api/setup', methods=['POST'])
 def api_setup():
     """Setup API key"""
-    data = request.get_json()
-    api_key = data.get('api_key')
+    # Try to get API key from header first, then from body
+    api_key = request.headers.get('X-API-Key')
+    if not api_key:
+        data = request.get_json()
+        api_key = data.get('api_key')
 
     if not api_key:
         return jsonify({'error': 'API key is required'}), 400
@@ -204,16 +207,17 @@ def api_setup():
             max_tokens=10
         )
 
-        if test_result:
+        if test_result and test_result.strip():
             session['api_key'] = api_key
             return jsonify({
                 'success': True,
                 'message': 'API key validated successfully'
             })
         else:
-            return jsonify({'error': 'Invalid API key'}), 400
+            return jsonify({'error': 'Invalid API key - no response from Z.ai'}), 400
 
     except Exception as e:
+        print(f"API validation error: {str(e)}")
         return jsonify({'error': f'API validation failed: {str(e)}'}), 400
 
 @app.route('/api/test-connection', methods=['POST'])
