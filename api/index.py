@@ -1,27 +1,44 @@
 #!/usr/bin/env python3
 """
-Minimal Vercel Serverless Function for testing
+Vercel Python Serverless Function
 """
 import json
+import sys
+from wsgiref.headers import Headers
 
-def handler(request):
-    """Basic Vercel serverless function handler"""
+class VercelRequest:
+    def __init__(self, event):
+        self.event = event
+        self.method = event.get('httpMethod', 'GET')
+        self.path = event.get('path', '/')
+        self.headers = event.get('headers', {})
+        self.query = event.get('queryStringParameters', {})
+        self.body = event.get('body', '')
 
-    print(f"DEBUG: Request method: {request.method}")
-    print(f"DEBUG: Request path: {request.path}")
-    print(f"DEBUG: Request headers: {dict(request.headers)}")
+class VercelResponse:
+    def __init__(self):
+        self.status_code = 200
+        self.headers = Headers()
+        self.headers.add('Content-Type', 'application/json')
+        self.headers.add('Access-Control-Allow-Origin', '*')
 
+def handler(event, context):
+    """
+    Main Vercel handler function
+    """
     try:
-        # Simple response
-        response_data = {
-            "status": "success",
-            "message": "Instagram Automation API is running!",
-            "method": request.method or "GET",
-            "path": request.path or "/",
-            "debug": "Basic handler working"
-        }
+        request = VercelRequest(event)
+        response = VercelResponse()
 
-        response_body = json.dumps(response_data, indent=2)
+        # Simple response
+        data = {
+            "status": "success",
+            "message": "Instagram Automation API is working!",
+            "method": request.method,
+            "path": request.path,
+            "query": request.query,
+            "debug": "Vercel Python function executed successfully"
+        }
 
         return {
             'statusCode': 200,
@@ -31,16 +48,17 @@ def handler(request):
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key'
             },
-            'body': response_body
+            'body': json.dumps(data, indent=2)
         }
 
     except Exception as e:
-        print(f"ERROR: {str(e)}")
-        error_response = {
+        print(f"Error in handler: {e}", file=sys.stderr)
+
+        error_data = {
             "status": "error",
             "message": "Internal server error",
             "error": str(e),
-            "debug": "Error caught in handler"
+            "debug": "Error caught in Vercel handler"
         }
 
         return {
@@ -49,8 +67,9 @@ def handler(request):
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps(error_response, indent=2)
+            'body': json.dumps(error_data, indent=2)
         }
 
 # Export for Vercel
 app_handler = handler
+lambda_handler = handler
