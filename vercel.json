@@ -4,52 +4,12 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/setup",
       "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/test-connection",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/start-job",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/job-status/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/job-results/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/jobs",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/topics",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/config",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }
