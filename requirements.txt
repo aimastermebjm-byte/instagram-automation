@@ -1,2 +1,1 @@
-# Minimal dependencies for testing
-requests>=2.31.0
+# No dependencies needed for simple Python function
