@@ -545,33 +545,111 @@
 
                 const jobsList = document.getElementById('jobsList');
                 const activeJobsData = data.active_jobs || {};
-
-                if (Object.keys(activeJobsData).length === 0) {
-                    jobsList.innerHTML = '<p style="text-align: center; color: #666;">No active jobs</p>';
-                    return;
-                }
+                const completedJobsData = data.completed_jobs || {};
 
                 jobsList.innerHTML = '';
 
-                Object.entries(activeJobsData).forEach(([jobId, job]) => {
-                    const jobElement = document.createElement('div');
-                    jobElement.className = 'job-item';
-                    jobElement.innerHTML = `
-                        <h4>Job: ${jobId.substring(0, 8)}...</h4>
-                        <p><strong>Status:</strong> ${job.status}</p>
-                        <p><strong>Progress:</strong> ${Math.round(job.progress || 0)}%</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
-                        </div>
-                        <p><strong>Current Topic:</strong> ${job.current_topic || 'N/A'}</p>
-                        <p><strong>Message:</strong> ${job.message}</p>
-                        <p><strong>Started:</strong> ${new Date(job.started_at).toLocaleString()}</p>
-                        ${job.completed_at ? `<p><strong>Completed:</strong> ${new Date(job.completed_at).toLocaleString()}</p>` : ''}
-                    `;
-                    jobsList.appendChild(jobElement);
-                });
+                // Show active jobs
+                const activeJobs = Object.entries(activeJobsData);
+                const completedJobs = Object.entries(completedJobsData);
+
+                if (activeJobs.length > 0) {
+                    const activeTitle = document.createElement('h3');
+                    activeTitle.innerHTML = '🔄 Active Jobs';
+                    activeTitle.style.color = '#667eea';
+                    jobsList.appendChild(activeTitle);
+
+                    activeJobs.forEach(([jobId, job]) => {
+                        const jobElement = document.createElement('div');
+                        jobElement.className = 'job-item';
+                        jobElement.style.borderLeft = '4px solid #667eea';
+                        jobElement.innerHTML = `
+                            <h4>🚀 Job: ${jobId.substring(0, 8)}...</h4>
+                            <p><strong>Status:</strong> <span style="color: #667eea;">${job.status}</span></p>
+                            <p><strong>Progress:</strong> ${Math.round(job.progress || 0)}%</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
+                            </div>
+                            <p><strong>Current Topic:</strong> ${job.current_topic || 'N/A'}</p>
+                            <p><strong>Message:</strong> ${job.message}</p>
+                            <p><strong>Started:</strong> ${new Date(job.started_at).toLocaleString()}</p>
+                            ${job.total_posts ? `<p><strong>Total Posts:</strong> ${job.total_posts}</p>` : ''}
+                        `;
+                        jobsList.appendChild(jobElement);
+                    });
+                }
+
+                // Show completed jobs with results
+                if (completedJobs.length > 0) {
+                    const completedTitle = document.createElement('h3');
+                    completedTitle.innerHTML = '✅ Completed Jobs';
+                    completedTitle.style.color = '#4facfe';
+                    completedTitle.style.marginTop = '20px';
+                    jobsList.appendChild(completedTitle);
+
+                    completedJobs.forEach(([jobId, result]) => {
+                        const jobElement = document.createElement('div');
+                        jobElement.className = 'job-item';
+                        jobElement.style.borderLeft = '4px solid #4facfe';
+                        jobElement.style.backgroundColor = '#f8f9fa';
+
+                        let postsHTML = '';
+                        if (result.posts && Array.isArray(result.posts) && result.posts.length > 0) {
+                            postsHTML = `
+                                <div style="margin-top: 15px;">
+                                    <h5 style="color: #4facfe; margin-bottom: 10px;">📱 Generated Instagram Posts:</h5>
+                                    ${result.posts.slice(0, 3).map((post, index) => `
+                                        <div style="background: white; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #e1e5e9;">
+                                            <p style="margin: 0 0 8px 0; font-weight: 600; color: #333;">
+                                                ${index + 1}. <span style="color: #667eea;">${post.topic || 'Post'}</span>
+                                            </p>
+                                            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin: 8px 0;">
+                                                <p style="margin: 0; font-size: 0.9em; line-height: 1.4;">
+                                                    "${post.caption || post.title || 'AI-generated caption'}"
+                                                </p>
+                                            </div>
+                                            ${post.image_url ? `
+                                                <div style="text-align: center; margin: 8px 0;">
+                                                    <img src="${post.image_url}" alt="Generated image"
+                                                         style="max-width: 200px; height: auto; border-radius: 8px; border: 2px solid #e1e5e9;" />
+                                                </div>
+                                            ` : ''}
+                                            ${post.hashtags && post.hashtags.length > 0 ? `
+                                                <p style="margin: 8px 0 0 0; font-size: 0.85em; color: #666;">
+                                                    <strong>Hashtags:</strong> ${post.hashtags.slice(0, 5).join(' ')}
+                                                    ${post.hashtags.length > 5 ? '...' : ''}
+                                                </p>
+                                            ` : ''}
+                                        </div>
+                                    `).join('')}
+                                    ${result.posts.length > 3 ? `
+                                        <p style="text-align: center; color: #666; font-size: 0.9em;">
+                                            ...and ${result.posts.length - 3} more posts
+                                        </p>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+
+                        jobElement.innerHTML = `
+                            <h4>✅ Job: ${jobId.substring(0, 8)}...</h4>
+                            <p><strong>Status:</strong> <span style="color: #4facfe;">Completed</span></p>
+                            <p><strong>Total Posts:</strong> ${result.total_posts || 0}</p>
+                            <p><strong>Completed:</strong> ${new Date(result.completed_at).toLocaleString()}</p>
+                            ${postsHTML}
+                        `;
+                        jobsList.appendChild(jobElement);
+                    });
+                }
+
+                if (activeJobs.length === 0 && completedJobs.length === 0) {
+                    jobsList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No jobs yet. Create your first automation job above! 🚀</p>';
+                }
+
             } catch (error) {
                 console.error('Failed to refresh jobs:', error);
+                const jobsList = document.getElementById('jobsList');
+                jobsList.innerHTML = '<p style="text-align: center; color: #f44336; padding: 20px;">Error loading jobs: ' + error.message + '</p>';
             }
         }
 
