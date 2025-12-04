@@ -153,6 +153,12 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
                        data.text ||
                        JSON.stringify(data);
 
+          // Clean up scraped content - remove excessive HTML/JSON that's too long
+          if (newsContent.length > 10000) {
+            console.log('🧹 Content too long, truncating to first 2000 chars');
+            newsContent = newsContent.substring(0, 2000) + '...';
+          }
+
           console.log(`✅ News content scraped (${newsContent.length} characters)`);
           console.log('📝 News content preview:', newsContent.substring(0, 200) + '...');
 
@@ -292,12 +298,26 @@ async function generateInstagramContent(item, apiKey) {
     let lastError = null;
     let successResponse = null;
 
+    // Clean up content for AI processing
+    let cleanContent = item.content;
+
+    // If content is too long, extract only the main article text
+    if (cleanContent.length > 3000) {
+      cleanContent = cleanContent.substring(0, 3000) + '...';
+
+      // Try to extract title and first paragraph
+      const titleMatch = cleanContent.match(/#([^#\n]+)/);
+      if (titleMatch) {
+        cleanContent = `Judul: ${titleMatch[1]}\n\n${cleanContent.substring(0, 1000)}...`;
+      }
+    }
+
     const prompt = isNews ?
       `Baca berita ini dan buat postingan Instagram yang menarik dalam bahasa Indonesia:
 
 BERITA:
 """
-${item.content.substring(0, 2000)}...
+${cleanContent}
 """
 
 Buat postingan Instagram dengan:
