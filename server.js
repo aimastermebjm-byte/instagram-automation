@@ -432,6 +432,20 @@ Respons dalam format JSON:
     };
 
     const topicName = item.type === 'news' ? 'Berita Terkini' : item.content;
+
+    // Check if content is actually an error message
+    const isErrorMessage = item.content.toLowerCase().includes('error 403') ||
+                          item.content.toLowerCase().includes('request blocked') ||
+                          item.content.toLowerCase().includes('cloudfront') ||
+                          item.content.toLowerCase().includes('maaf, tidak dapat');
+
+    if (isErrorMessage && item.type === 'news') {
+      // For news with scraping errors, use URL hostname as topic
+      const urlHost = new URL(item.url).hostname;
+      console.log(`🔄 Using fallback for blocked URL: ${urlHost}`);
+      topicName = `Breaking News from ${urlHost}`;
+    }
+
     const caption = indonesianContent[topicName.toLowerCase()] ||
                    `🔥 ${topicName} Indonesia sedang trending! Swipe up untuk detail lengkap 🚀`;
 
