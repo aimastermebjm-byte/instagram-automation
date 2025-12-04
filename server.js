@@ -144,9 +144,21 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
 
         if (response.ok) {
           const data = await response.json();
-          newsContent = data.content || '';
+          console.log('🔍 Full Z.ai Reader Response:', JSON.stringify(data, null, 2));
+
+          // Try different possible response structures
+          newsContent = data.content ||
+                       data.data?.content ||
+                       data.result?.content ||
+                       data.text ||
+                       JSON.stringify(data);
+
           console.log(`✅ News content scraped (${newsContent.length} characters)`);
           console.log('📝 News content preview:', newsContent.substring(0, 200) + '...');
+
+          if (!newsContent || newsContent.trim().length === 0) {
+            console.error('❌ No content found in response!');
+          }
         } else {
           const errorText = await response.text();
           console.error(`❌ URL scraping failed (${response.status}):`, errorText);
@@ -343,12 +355,23 @@ Respons dalam format JSON:
 
         if (response.ok) {
           const data = await response.json();
-          console.log('✅ API Response:', JSON.stringify(data, null, 2));
+          console.log('🔍 Full Z.ai Chat Response:', JSON.stringify(data, null, 2));
 
+          // Try different response structures
+          let content = null;
           if (data.choices && data.choices[0] && data.choices[0].message) {
-            const content = data.choices[0].message.content;
-            console.log('📝 Raw content:', content);
+            content = data.choices[0].message.content;
+          } else if (data.data && data.data.choices && data.data.choices[0]) {
+            content = data.data.choices[0].message?.content;
+          } else if (data.result) {
+            content = data.result;
+          } else {
+            content = JSON.stringify(data);
+          }
 
+          console.log('📝 Raw content:', content);
+
+          if (content && content.trim().length > 0) {
             // Try to parse JSON response
             try {
               const parsed = JSON.parse(content);
@@ -366,8 +389,11 @@ Respons dalam format JSON:
                 imagePrompt: `${item.content} aesthetic Instagram post style, modern Indonesian design`,
                 hashtags: [`#${item.content.replace(/\s+/g, '')}`, `#${item.content}`, `#indonesia`, `#viral`]
               };
+              console.log('✅ Fallback response:', successResponse);
               break;
             }
+          } else {
+            console.error('❌ No content found in Z.ai response!');
           }
         } else {
           lastError = `${response.status} ${response.statusText}`;

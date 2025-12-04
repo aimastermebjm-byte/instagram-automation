@@ -14,7 +14,8 @@
       "Bash(\"C:\\Users\\LENOVO\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\":*)",
       "Bash(powershell:*)",
       "Bash(vercel --prod)",
-      "Bash(vercel projects:*)"
+      "Bash(vercel projects:*)",
+      "Bash(node server.js)"
     ],
     "deny": [],
     "ask": []
