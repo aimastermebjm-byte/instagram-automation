@@ -1,6 +1,6 @@
 {
   "name": "instagram-automation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instagram Automation with Z.ai API",
   "main": "server.js",
   "scripts": {
