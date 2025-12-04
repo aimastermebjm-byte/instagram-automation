@@ -51,7 +51,9 @@ const activeJobs = {};
 app.post('/api/generate', async (req, res) => {
   try {
     const api_key = req.headers['x-api-key'];
+    const news_url = req.body.news_url || '';
     const topics = req.body.topics || [];
+    const custom_topics = req.body.custom_topics || [];
     const options = req.body.options || {};
 
     if (!api_key) {
@@ -61,15 +63,18 @@ app.post('/api/generate', async (req, res) => {
       });
     }
 
-    if (!topics.length) {
+    if (!news_url && !topics.length && !custom_topics.length) {
       return res.status(400).json({
         status: "error",
-        message: "Topics are required"
+        message: "News URL or topics are required"
       });
     }
 
     // Create job
     const jobId = "job_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+
+    // Combine all topics
+    const allTopics = [...topics, ...custom_topics];
 
     // Initialize job
     activeJobs[jobId] = {
@@ -77,12 +82,13 @@ app.post('/api/generate', async (req, res) => {
       progress: 0,
       message: "Starting content generation...",
       created_at: new Date().toISOString(),
-      topics: topics,
+      news_url: news_url,
+      topics: allTopics,
       results: []
     };
 
     // Start async processing
-    processContentGeneration(jobId, topics, options, api_key);
+    processContentGeneration(jobId, news_url, allTopics, options, api_key);
 
     res.status(200).json({
       status: "success",
@@ -101,30 +107,81 @@ app.post('/api/generate', async (req, res) => {
 });
 
 // Real content generation function
-async function processContentGeneration(jobId, topics, options, apiKey) {
+async function processContentGeneration(jobId, newsUrl, topics, options, apiKey) {
   try {
     const maxPosts = options.max_posts || 3;
     const results = [];
+    let newsContent = null;
+
+    // If news URL is provided, scrape the content first
+    if (newsUrl) {
+      if (activeJobs[jobId]) {
+        activeJobs[jobId].status = "processing";
+        activeJobs[jobId].message = "📰 Reading news article...";
+        activeJobs[jobId].progress = 10;
+      }
+
+      try {
+        console.log(`📰 Scraping URL: ${newsUrl}`);
+        const response = await fetch('https://api.z.ai/api/paas/v4/reader', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            url: newsUrl,
+            timeout: 20,
+            no_cache: false,
+            return_format: "markdown",
+            retain_images: true,
+            no_gfm: false,
+            keep_img_data_url: false,
+            with_images_summary: false,
+            with_links_summary: false
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          newsContent = data.content || '';
+          console.log(`✅ News content scraped (${newsContent.length} characters)`);
+        } else {
+          throw new Error(`Failed to scrape URL: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error(`❌ URL scraping failed:`, error);
+        newsContent = null;
+      }
+    }
 
     // Update job status
     if (activeJobs[jobId]) {
       activeJobs[jobId].status = "processing";
-      activeJobs[jobId].message = "Generating content for topics...";
+      activeJobs[jobId].message = newsContent ? "Creating content from news article..." : "Generating content for topics...";
+      activeJobs[jobId].progress = 30;
     }
 
-    for (let i = 0; i < topics.length; i++) {
-      const topic = topics[i];
+    // Generate content based on news or topics
+    const contentItems = newsContent ?
+      [{ type: 'news', content: newsContent, url: newsUrl }] :
+      topics.map(topic => ({ type: 'topic', content: topic }));
+
+    for (let i = 0; i < contentItems.length; i++) {
+      const item = contentItems[i];
 
       // Update progress
       if (activeJobs[jobId]) {
-        activeJobs[jobId].progress = Math.round((i / topics.length) * 100);
-        activeJobs[jobId].message = `Processing topic: ${topic}`;
+        activeJobs[jobId].progress = Math.round(30 + (i / contentItems.length) * 60);
+        activeJobs[jobId].message = item.type === 'news' ?
+          `Creating Instagram content from news article...` :
+          `Processing topic: ${item.content}`;
       }
 
-      // Generate content for each topic
+      // Generate content for each item
       for (let j = 0; j < maxPosts; j++) {
         try {
-          const content = await generateInstagramContent(topic, apiKey);
+          const content = await generateInstagramContent(item, apiKey);
           if (content) {
             // Generate actual image using Z.ai API
             let imageUrl = null;
@@ -152,21 +209,22 @@ async function processContentGeneration(jobId, topics, options, apiKey) {
                 console.log(`✅ Image generated: ${imageUrl}`);
               }
             } catch (imgError) {
-              console.log(`⚠️ Image generation failed for ${topic}:`, imgError.message);
+              console.log(`⚠️ Image generation failed for ${item.content}:`, imgError.message);
             }
 
             results.push({
-              topic: topic,
+              topic: item.type === 'news' ? `News from ${new URL(item.url).hostname}` : item.content,
               post_number: j + 1,
               caption: content.caption,
               image_prompt: content.imagePrompt,
               image_url: imageUrl,
               hashtags: content.hashtags,
+              news_url: item.type === 'news' ? item.url : null,
               created_at: new Date().toISOString()
             });
           }
         } catch (error) {
-          console.error(`Error generating content for ${topic}:`, error);
+          console.error(`Error generating content for ${item.content}:`, error);
         }
       }
     }
@@ -193,9 +251,10 @@ async function processContentGeneration(jobId, topics, options, apiKey) {
 }
 
 // Generate Instagram content using Z.ai API
-async function generateInstagramContent(topic, apiKey) {
+async function generateInstagramContent(item, apiKey) {
   try {
-    console.log(`🔗 Calling Z.ai API for topic: ${topic}`);
+    const isNews = item.type === 'news';
+    console.log(`🔗 Calling Z.ai API for ${isNews ? 'news content' : 'topic'}: ${item.content.substring(0, 100)}...`);
 
     // Correct Z.ai API endpoints from documentation
     const possibleEndpoints = [
@@ -205,6 +264,37 @@ async function generateInstagramContent(topic, apiKey) {
 
     let lastError = null;
     let successResponse = null;
+
+    const prompt = isNews ?
+      `Baca berita ini dan buat postingan Instagram yang menarik dalam bahasa Indonesia:
+
+BERITA:
+"""
+${item.content.substring(0, 2000)}...
+"""
+
+Buat postingan Instagram dengan:
+1. Caption menarik (maks 150 karakter) yang merangkum berita penting
+2. Image prompt untuk AI image generation yang relevan dengan berita
+3. Hashtag yang relevan (5-8 hashtag)
+
+Respons dalam format JSON:
+{
+  "caption": "caption menarik di sini",
+  "imagePrompt": "deskripsi gambar detail untuk AI generation",
+  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
+}` :
+      `Buat postingan Instagram tentang "${item.content}" dalam bahasa Indonesia. Buat yang menarik, trending, dan cocok untuk audiens Indonesia. Sertakan:
+1. Caption menarik (maks 150 karakter)
+2. Image prompt untuk AI image generation
+3. Hashtag yang relevan (5-8 hashtag)
+
+Respons dalam format JSON:
+{
+  "caption": "caption menarik di sini",
+  "imagePrompt": "deskripsi gambar detail untuk AI generation",
+  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
+}`;
 
     for (const endpoint of possibleEndpoints) {
       try {
@@ -226,17 +316,7 @@ async function generateInstagramContent(topic, apiKey) {
               },
               {
                 role: "user",
-                content: `Buat postingan Instagram tentang "${topic}" dalam bahasa Indonesia. Buat yang menarik, trending, dan cocok untuk audiens Indonesia. Sertakan:
-1. Caption menarik (maks 150 karakter)
-2. Image prompt untuk AI image generation
-3. Hashtag yang relevan (5-8 hashtag)
-
-Respons dalam format JSON:
-{
-  "caption": "caption menarik di sini",
-  "imagePrompt": "deskripsi gambar detail untuk AI generation",
-  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
-}`
+                content: prompt
               }
             ],
             max_tokens: 500,
@@ -573,14 +653,16 @@ app.get('*', (req, res) => {
         <div class="card hidden" id="jobCard">
             <h2>📝 Create Automation Job</h2>
             <div class="form-group">
-                <label>🏷️ Topics (Click to select)</label>
-                <div class="topics-container" id="topicsContainer">
-                    <div style="color: #666;">Loading topics...</div>
-                </div>
+                <label for="newsUrl">📰 News URL</label>
+                <input type="url" id="newsUrl" placeholder="https://example.com/news-article"
+                    style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem;">
+                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                    Enter a news article URL. System will read the article, create summary, then generate image and caption.
+                </small>
             </div>
             <div class="form-group">
-                <label for="customTopics">✍️ Custom Topics (one per line)</label>
-                <textarea id="customTopics" rows="3" placeholder="Artificial Intelligence&#10;Digital Marketing&#10;Social Media Strategy"></textarea>
+                <label for="customTopics">✍️ Custom Topics (optional, if not using URL)</label>
+                <textarea id="customTopics" rows="2" placeholder="Additional topics..."></textarea>
             </div>
             <div class="grid">
                 <div class="form-group">
@@ -727,19 +809,14 @@ app.get('*', (req, res) => {
         }
 
         async function startJob() {
+            const newsUrl = document.getElementById("newsUrl").value.trim();
             const customTopicsText = document.getElementById("customTopics").value;
             const maxPosts = parseInt(document.getElementById("maxPosts").value);
             const timeRange = document.getElementById("timeRange").value;
 
-            const customTopics = customTopicsText
-                .split("\\n")
-                .map(function(t) { return t.trim(); })
-                .filter(function(t) { return t; });
-
-            const allTopics = Array.from(selectedTopics).concat(customTopics);
-
-            if (allTopics.length === 0) {
-                showStatus("jobStatus", "❌ Please select or enter at least one topic", "error");
+            // Check if URL is provided or topics are available
+            if (!newsUrl && !customTopicsText && selectedTopics.size === 0) {
+                showStatus("jobStatus", "❌ Please enter a news URL or select topics", "error");
                 return;
             }
 
@@ -752,7 +829,7 @@ app.get('*', (req, res) => {
             text.textContent = "Starting...";
 
             try {
-                console.log("🚀 Starting job with topics:", allTopics);
+                console.log("🚀 Starting job with URL:", newsUrl, "and topics:", customTopicsText);
                 const response = await fetch(API_BASE + "/api/generate", {
                     method: "POST",
                     headers: {
@@ -760,7 +837,9 @@ app.get('*', (req, res) => {
                         "X-API-Key": apiKey
                     },
                     body: JSON.stringify({
-                        topics: allTopics,
+                        news_url: newsUrl,
+                        topics: selectedTopics.size > 0 ? Array.from(selectedTopics) : [],
+                        custom_topics: customTopicsText.split("\\n").map(function(t) { return t.trim(); }).filter(function(t) { return t; }),
                         options: { max_posts: maxPosts, time_range: timeRange }
                     })
                 });
@@ -771,6 +850,8 @@ app.get('*', (req, res) => {
                 if (response.ok && data.success) {
                     showStatus("jobStatus", "✅ Job started successfully! Job ID: " + data.job_id, "success");
 
+                    // Clear form
+                    document.getElementById("newsUrl").value = "";
                     document.getElementById("customTopics").value = "";
                     document.querySelectorAll(".topic-chip.selected").forEach(function(chip) {
                         chip.classList.remove("selected");
