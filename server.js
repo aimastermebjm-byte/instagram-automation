@@ -146,7 +146,10 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
           const data = await response.json();
           newsContent = data.content || '';
           console.log(`✅ News content scraped (${newsContent.length} characters)`);
+          console.log('📝 News content preview:', newsContent.substring(0, 200) + '...');
         } else {
+          const errorText = await response.text();
+          console.error(`❌ URL scraping failed (${response.status}):`, errorText);
           throw new Error(`Failed to scrape URL: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
@@ -181,7 +184,10 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
       // Generate content for each item
       for (let j = 0; j < maxPosts; j++) {
         try {
+          console.log(`🔄 Generating content for post ${j + 1} of ${maxPosts}...`);
           const content = await generateInstagramContent(item, apiKey);
+          console.log(`📝 Content generated:`, content);
+
           if (content) {
             // Generate actual image using Z.ai API
             let imageUrl = null;
@@ -207,12 +213,15 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
                 const imageData = await imageResponse.json();
                 imageUrl = imageData.data[0].url;
                 console.log(`✅ Image generated: ${imageUrl}`);
+              } else {
+                const imgErrorText = await imageResponse.text();
+                console.error(`❌ Image generation API error:`, imgErrorText);
               }
             } catch (imgError) {
-              console.log(`⚠️ Image generation failed for ${item.content}:`, imgError.message);
+              console.error(`⚠️ Image generation failed for ${item.content}:`, imgError.message);
             }
 
-            results.push({
+            const resultData = {
               topic: item.type === 'news' ? `News from ${new URL(item.url).hostname}` : item.content,
               post_number: j + 1,
               caption: content.caption,
@@ -221,10 +230,16 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
               hashtags: content.hashtags,
               news_url: item.type === 'news' ? item.url : null,
               created_at: new Date().toISOString()
-            });
+            };
+
+            console.log(`✅ Result created:`, resultData);
+            results.push(resultData);
+          } else {
+            console.error(`❌ No content generated for ${item.content}`);
           }
         } catch (error) {
-          console.error(`Error generating content for ${item.content}:`, error);
+          console.error(`❌ Error generating content for ${item.content}:`, error);
+          console.error('Stack trace:', error.stack);
         }
       }
     }
