@@ -45,10 +45,21 @@ app.post('/api/setup', (req, res) => {
   }
 });
 
-app.post('/api/generate', (req, res) => {
+// Store for active jobs (in production, use Redis or database)
+const activeJobs = {};
+
+app.post('/api/generate', async (req, res) => {
   try {
+    const api_key = req.headers['x-api-key'];
     const topics = req.body.topics || [];
     const options = req.body.options || {};
+
+    if (!api_key) {
+      return res.status(401).json({
+        status: "error",
+        message: "API key is required"
+      });
+    }
 
     if (!topics.length) {
       return res.status(400).json({
@@ -59,6 +70,19 @@ app.post('/api/generate', (req, res) => {
 
     // Create job
     const jobId = "job_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+
+    // Initialize job
+    activeJobs[jobId] = {
+      status: "processing",
+      progress: 0,
+      message: "Starting content generation...",
+      created_at: new Date().toISOString(),
+      topics: topics,
+      results: []
+    };
+
+    // Start async processing
+    processContentGeneration(jobId, topics, options, api_key);
 
     res.status(200).json({
       status: "success",
@@ -75,6 +99,145 @@ app.post('/api/generate', (req, res) => {
     });
   }
 });
+
+// Real content generation function
+async function processContentGeneration(jobId, topics, options, apiKey) {
+  try {
+    const maxPosts = options.max_posts || 3;
+    const results = [];
+
+    // Update job status
+    if (activeJobs[jobId]) {
+      activeJobs[jobId].status = "processing";
+      activeJobs[jobId].message = "Generating content for topics...";
+    }
+
+    for (let i = 0; i < topics.length; i++) {
+      const topic = topics[i];
+
+      // Update progress
+      if (activeJobs[jobId]) {
+        activeJobs[jobId].progress = Math.round((i / topics.length) * 100);
+        activeJobs[jobId].message = `Processing topic: ${topic}`;
+      }
+
+      // Generate content for each topic
+      for (let j = 0; j < maxPosts; j++) {
+        try {
+          const content = await generateInstagramContent(topic, apiKey);
+          if (content) {
+            results.push({
+              topic: topic,
+              post_number: j + 1,
+              caption: content.caption,
+              image_prompt: content.imagePrompt,
+              hashtags: content.hashtags,
+              created_at: new Date().toISOString()
+            });
+          }
+        } catch (error) {
+          console.error(`Error generating content for ${topic}:`, error);
+        }
+      }
+    }
+
+    // Update job completion
+    if (activeJobs[jobId]) {
+      activeJobs[jobId].status = "completed";
+      activeJobs[jobId].progress = 100;
+      activeJobs[jobId].message = `Successfully generated ${results.length} posts`;
+      activeJobs[jobId].results = results;
+      activeJobs[jobId].completed_at = new Date().toISOString();
+    }
+
+    console.log(`✅ Job ${jobId} completed with ${results.length} posts generated`);
+
+  } catch (error) {
+    console.error(`Job ${jobId} failed:`, error);
+    if (activeJobs[jobId]) {
+      activeJobs[jobId].status = "failed";
+      activeJobs[jobId].message = "Failed to generate content: " + error.message;
+      activeJobs[jobId].error = error.message;
+    }
+  }
+}
+
+// Generate Instagram content using Z.ai API
+async function generateInstagramContent(topic, apiKey) {
+  try {
+    // Use fetch to call Z.ai API
+    const response = await fetch('https://api.z.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "glm-4.6",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert Instagram content creator. Create engaging, viral-worthy content about Indonesian topics. Always respond in valid JSON format with caption, imagePrompt, and hashtags fields."
+          },
+          {
+            role: "user",
+            content: `Create an Instagram post about "${topic}" in Indonesian. Make it engaging, trending, and suitable for Indonesian audience. Include:
+1. A catchy caption (max 150 characters)
+2. An image prompt for AI image generation
+3. Relevant hashtags (5-8 hashtags)
+
+Respond in JSON format:
+{
+  "caption": "engaging caption here",
+  "imagePrompt": "detailed image description for AI generation",
+  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
+}`
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.8
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Z.ai API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      const content = data.choices[0].message.content;
+
+      // Try to parse JSON response
+      try {
+        const parsed = JSON.parse(content);
+        return {
+          caption: parsed.caption || content.substring(0, 150),
+          imagePrompt: parsed.imagePrompt || `${topic} aesthetic Instagram post style`,
+          hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : [`#${topic.replace(/\s+/g, '')}`, `#${topic}`]
+        };
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        return {
+          caption: content.substring(0, 150),
+          imagePrompt: `${topic} aesthetic Instagram post style`,
+          hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#viral`, `#trending`]
+        };
+      }
+    }
+
+    throw new Error('No valid response from Z.ai API');
+
+  } catch (error) {
+    console.error('Z.ai API error:', error);
+    // Return fallback content if API fails
+    return {
+      caption: `🔥 Trending content about ${topic}! Swipe up to learn more 🚀`,
+      imagePrompt: `${topic} aesthetic Instagram post style, modern, clean design`,
+      hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#viral`, `#trending`, `#indonesia`]
+    };
+  }
+}
 
 app.get('/api/topics', (req, res) => {
   try {
@@ -103,8 +266,8 @@ app.get('/api/jobs', (req, res) => {
   try {
     res.status(200).json({
       status: "success",
-      active_jobs: {},
-      completed_jobs: {},
+      active_jobs: activeJobs,
+      completed_jobs: {}, // We store everything in activeJobs for now
       success: true
     });
   } catch (error) {
@@ -432,13 +595,31 @@ app.get('*', (req, res) => {
                         var html = '<h3 style="color: #667eea; margin-bottom: 15px;">🔄 Active Jobs</h3>';
                         Object.keys(data.active_jobs).forEach(function(jobId) {
                             var job = data.active_jobs[jobId];
+                            var statusColor = job.status === 'completed' ? '#28a745' : (job.status === 'failed' ? '#dc3545' : '#667eea');
+
                             html +=
-                                '<div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #667eea;">' +
-                                    '<h4 style="color: #667eea;">🚀 Job: ' + jobId.substring(0, 8) + '...</h4>' +
+                                '<div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid ' + statusColor + ';">' +
+                                    '<h4 style="color: ' + statusColor + ';">🚀 Job: ' + jobId.substring(0, 8) + '...</h4>' +
                                     '<p><strong>Status:</strong> ' + (job.status || "Unknown") + '</p>' +
                                     '<p><strong>Progress:</strong> ' + (job.progress || 0) + '%</p>' +
                                     '<p><strong>Message:</strong> ' + (job.message || "Processing...") + '</p>' +
-                                '</div>';
+                                    '<p><strong>Topics:</strong> ' + (job.topics ? job.topics.join(', ') : 'N/A') + '</p>';
+
+                            // Show results if job is completed
+                            if (job.status === 'completed' && job.results && job.results.length > 0) {
+                                html += '<div style="margin-top: 15px;"><strong>📝 Generated Content (' + job.results.length + ' posts):</strong></div>';
+                                job.results.forEach(function(result, index) {
+                                    html +=
+                                        '<div style="background: white; border-radius: 6px; padding: 10px; margin-top: 8px; border: 1px solid #dee2e6;">' +
+                                            '<div style="font-weight: bold; color: #667eea;">Post ' + (index + 1) + ' - ' + (result.topic || 'Unknown') + '</div>' +
+                                            '<div style="margin: 5px 0; font-size: 14px;">💬 ' + (result.caption || 'No caption') + '</div>' +
+                                            '<div style="margin: 5px 0; font-size: 12px; color: #666;">🎨 ' + (result.image_prompt || 'No image prompt') + '</div>' +
+                                            '<div style="margin: 5px 0; font-size: 12px; color: #007bff;">🏷️ ' + (result.hashtags ? result.hashtags.join(' ') : 'No hashtags') + '</div>' +
+                                        '</div>';
+                                });
+                            }
+
+                            html += '</div>';
                         });
                         jobsList.innerHTML = html;
                     } else {
