@@ -153,10 +153,50 @@ async function processContentGeneration(jobId, newsUrl, topics, options, apiKey)
                        data.text ||
                        JSON.stringify(data);
 
-          // Clean up scraped content - remove excessive HTML/JSON that's too long
-          if (newsContent.length > 10000) {
-            console.log('🧹 Content too long, truncating to first 2000 chars');
-            newsContent = newsContent.substring(0, 2000) + '...';
+          // Clean up scraped content - extract just the article text
+          if (newsContent.length > 2000) {
+            console.log('🧹 Content too long, extracting article text only');
+
+            // Try to find the main article content after title
+            const lines = newsContent.split('\n');
+            let articleText = '';
+            let foundTitle = false;
+            let foundContent = false;
+
+            for (let line of lines) {
+              // Skip obvious headers/navigation
+              if (line.includes('Tribun Network') || line.includes('LIVE') ||
+                  line.includes('Halo,') || line.includes('Profile') ||
+                  line.includes('Download') || line.includes('Follow us') ||
+                  line.includes('Tribun Epaper') || line.includes('Gramedia')) {
+                continue;
+              }
+
+              // Look for title (starts with #)
+              if (line.startsWith('#') && !foundTitle) {
+                foundTitle = true;
+                articleText += line + '\n\n';
+                continue;
+              }
+
+              // Start collecting content after title
+              if (foundTitle && line.trim().length > 50) {
+                articleText += line + '\n';
+                foundContent = true;
+
+                // Stop if we have enough content
+                if (articleText.length > 1500) {
+                  break;
+                }
+              }
+            }
+
+            if (articleText.length > 200) {
+              newsContent = articleText + '...';
+            } else {
+              // Fallback: just take first 1500 chars
+              newsContent = newsContent.substring(0, 1500) + '...';
+            }
           }
 
           console.log(`✅ News content scraped (${newsContent.length} characters)`);
@@ -298,18 +338,28 @@ async function generateInstagramContent(item, apiKey) {
     let lastError = null;
     let successResponse = null;
 
-    // Clean up content for AI processing
+    // Clean up content for AI processing - get just the essence
     let cleanContent = item.content;
 
-    // If content is too long, extract only the main article text
-    if (cleanContent.length > 3000) {
-      cleanContent = cleanContent.substring(0, 3000) + '...';
-
-      // Try to extract title and first paragraph
-      const titleMatch = cleanContent.match(/#([^#\n]+)/);
+    // Extract title and main content for better AI processing
+    if (cleanContent.includes('#')) {
+      const titleMatch = cleanContent.match(/#([^#\n]+(?:\n[^#\n]+)*)/);
       if (titleMatch) {
-        cleanContent = `Judul: ${titleMatch[1]}\n\n${cleanContent.substring(0, 1000)}...`;
+        const title = titleMatch[1].replace(/\n/g, ' ').trim();
+        // Find first substantial paragraph after title
+        const afterTitle = cleanContent.substring(cleanContent.indexOf(titleMatch[0]) + titleMatch[0].length);
+        const paragraphs = afterTitle.split('\n').filter(p => p.trim().length > 100);
+
+        if (paragraphs.length > 0) {
+          cleanContent = `Judul: ${title}\n\nKonten utama: ${paragraphs[0].substring(0, 800)}...`;
+        } else {
+          cleanContent = `Judul: ${title}`;
+        }
+      } else if (cleanContent.length > 800) {
+        cleanContent = cleanContent.substring(0, 800) + '...';
       }
+    } else if (cleanContent.length > 1500) {
+      cleanContent = cleanContent.substring(0, 1500) + '...';
     }
 
     const prompt = isNews ?
@@ -320,17 +370,23 @@ BERITA:
 ${cleanContent}
 """
 
-Buat postingan Instagram dengan:
-1. Caption menarik (maks 150 karakter) yang merangkum berita penting
-2. Image prompt untuk AI image generation yang relevan dengan berita
-3. Hashtag yang relevan (5-8 hashtag)
+BUAT HASIL YANG SANGAT BAGUS seperti contoh:
 
-Respons dalam format JSON:
+1. Caption yang singkat dan menarik (maks 150 karakter) - HARUS relevan dengan berita
+2. Image prompt yang detail dan spesifik untuk gambar - DESKRIPSI VISUAL YANG JELAS
+3. 5-8 hashtag yang tepat dan trending
+
+FORMAT WAJIB:
 {
-  "caption": "caption menarik di sini",
-  "imagePrompt": "deskripsi gambar detail untuk AI generation",
-  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
-}` :
+  "caption": "Teks caption menarik dan singkat",
+  "imagePrompt": "Deskripsi visual detail untuk gambar: warna, objek, suasana, gaya",
+  "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3"]
+}
+
+Contoh bagus:
+- Caption: "Menkeu Purbaya siap ke China bahas utang Whoosh! 💰"
+- Image Prompt: "Menteri Keuangan Indonesia dengan dokumen negara, suasana formal, latar belakang kantor, warna biru dan merah"
+- Hashtags: ["#menkeu", "#indonesia", "#whoosh", "#ekonomi"]` :
       `Buat postingan Instagram tentang "${item.content}" dalam bahasa Indonesia. Buat yang menarik, trending, dan cocok untuk audiens Indonesia. Sertakan:
 1. Caption menarik (maks 150 karakter)
 2. Image prompt untuk AI image generation
