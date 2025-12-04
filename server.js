@@ -137,7 +137,7 @@ async function processContentGeneration(jobId, topics, options, apiKey) {
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                  model: "dall-e-3",
+                  model: "cogview-4-250304",
                   prompt: content.imagePrompt,
                   n: 1,
                   size: "1024x1024",
@@ -218,7 +218,7 @@ async function generateInstagramContent(topic, apiKey) {
             'User-Agent': 'Instagram-Automation/1.0'
           },
           body: JSON.stringify({
-            model: "GLM-4.6",
+            model: "glm-4.6",
             messages: [
               {
                 role: "system",
@@ -390,7 +390,7 @@ app.post('/api/generate-image', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "dall-e-3",
+        model: "cogview-4-250304",
         prompt: prompt,
         n: 1,
         size: size,
