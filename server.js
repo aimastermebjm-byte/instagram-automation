@@ -126,11 +126,41 @@ async function processContentGeneration(jobId, topics, options, apiKey) {
         try {
           const content = await generateInstagramContent(topic, apiKey);
           if (content) {
+            // Generate actual image using Z.ai API
+            let imageUrl = null;
+            try {
+              console.log(`🎨 Generating image for: ${content.imagePrompt}`);
+              const imageResponse = await fetch('https://api.z.ai/api/paas/v4/images/generations', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${apiKey}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  model: "dall-e-3",
+                  prompt: content.imagePrompt,
+                  n: 1,
+                  size: "1024x1024",
+                  style: "vivid",
+                  response_format: "url"
+                })
+              });
+
+              if (imageResponse.ok) {
+                const imageData = await imageResponse.json();
+                imageUrl = imageData.data[0].url;
+                console.log(`✅ Image generated: ${imageUrl}`);
+              }
+            } catch (imgError) {
+              console.log(`⚠️ Image generation failed for ${topic}:`, imgError.message);
+            }
+
             results.push({
               topic: topic,
               post_number: j + 1,
               caption: content.caption,
               image_prompt: content.imagePrompt,
+              image_url: imageUrl,
               hashtags: content.hashtags,
               created_at: new Date().toISOString()
             });
@@ -167,11 +197,10 @@ async function generateInstagramContent(topic, apiKey) {
   try {
     console.log(`🔗 Calling Z.ai API for topic: ${topic}`);
 
-    // Test multiple possible Z.ai API endpoints
+    // Correct Z.ai API endpoints from documentation
     const possibleEndpoints = [
-      'https://api.z.ai/v1/chat/completions',
-      'https://api.z.ai/openai/v1/chat/completions',
-      'https://z.ai/api/v1/chat/completions'
+      'https://api.z.ai/api/paas/v4/chat/completions',
+      'https://api.z.ai/paas/v4/chat/completions'
     ];
 
     let lastError = null;
@@ -189,7 +218,7 @@ async function generateInstagramContent(topic, apiKey) {
             'User-Agent': 'Instagram-Automation/1.0'
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4",
             messages: [
               {
                 role: "system",
@@ -328,6 +357,132 @@ app.get('/api/jobs', (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Failed to load jobs"
+    });
+  }
+});
+
+// Generate images using Z.ai API
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const api_key = req.headers['x-api-key'];
+    const { prompt, style = "realistic", size = "1024x1024" } = req.body;
+
+    if (!api_key) {
+      return res.status(401).json({
+        status: "error",
+        message: "API key is required"
+      });
+    }
+
+    if (!prompt) {
+      return res.status(400).json({
+        status: "error",
+        message: "Prompt is required"
+      });
+    }
+
+    console.log(`🎨 Generating image with prompt: ${prompt}`);
+
+    const response = await fetch('https://api.z.ai/api/paas/v4/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${api_key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: prompt,
+        n: 1,
+        size: size,
+        style: style,
+        response_format: "url"
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Z.ai Image API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Image generated successfully:', data);
+
+    res.status(200).json({
+      status: "success",
+      image_url: data.data[0].url,
+      prompt: prompt,
+      success: true
+    });
+
+  } catch (error) {
+    console.error('Image generation error:', error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to generate image: " + error.message
+    });
+  }
+});
+
+// Scrape URL content using Z.ai Web Reader API
+app.post('/api/scrape-url', async (req, res) => {
+  try {
+    const api_key = req.headers['x-api-key'];
+    const { url, timeout = 20 } = req.body;
+
+    if (!api_key) {
+      return res.status(401).json({
+        status: "error",
+        message: "API key is required"
+      });
+    }
+
+    if (!url) {
+      return res.status(400).json({
+        status: "error",
+        message: "URL is required"
+      });
+    }
+
+    console.log(`📰 Scraping URL: ${url}`);
+
+    const response = await fetch('https://api.z.ai/api/paas/v4/reader', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${api_key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: url,
+        timeout: timeout,
+        no_cache: false,
+        return_format: "markdown",
+        retain_images: true,
+        no_gfm: false,
+        keep_img_data_url: false,
+        with_images_summary: false,
+        with_links_summary: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Z.ai Reader API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ URL scraped successfully');
+
+    res.status(200).json({
+      status: "success",
+      content: data.content,
+      url: url,
+      title: data.title,
+      success: true
+    });
+
+  } catch (error) {
+    console.error('URL scraping error:', error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to scrape URL: " + error.message
     });
   }
 });
@@ -666,7 +821,10 @@ app.get('*', (req, res) => {
                                         '<div style="background: white; border-radius: 6px; padding: 10px; margin-top: 8px; border: 1px solid #dee2e6;">' +
                                             '<div style="font-weight: bold; color: #667eea;">Post ' + (index + 1) + ' - ' + (result.topic || 'Unknown') + '</div>' +
                                             '<div style="margin: 5px 0; font-size: 14px;">💬 ' + (result.caption || 'No caption') + '</div>' +
-                                            '<div style="margin: 5px 0; font-size: 12px; color: #666;">🎨 ' + (result.image_prompt || 'No image prompt') + '</div>' +
+                                            (result.image_url ?
+                                                '<div style="margin: 5px 0;"><img src="' + result.image_url + '" style="max-width: 200px; border-radius: 4px;" alt="Generated image"></div>' :
+                                                '<div style="margin: 5px 0; font-size: 12px; color: #666;">🎨 ' + (result.image_prompt || 'No image prompt') + '</div>'
+                                            ) +
                                             '<div style="margin: 5px 0; font-size: 12px; color: #007bff;">🏷️ ' + (result.hashtags ? result.hashtags.join(' ') : 'No hashtags') + '</div>' +
                                         '</div>';
                                 });
