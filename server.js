@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 8080; // Railway fix
+const PORT = process.env.PORT || 8080; // Railway DEPLOY v2.0 - FIXED
 
 // Enable CORS
 app.use(cors());
