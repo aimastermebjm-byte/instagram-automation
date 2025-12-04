@@ -93,7 +93,7 @@ app.post('/api/generate', async (req, res) => {
     res.status(200).json({
       status: "success",
       job_id: jobId,
-      message: "Job started for " + topics.length + " topics",
+      message: news_url ? `Job started for URL: ${news_url}` : "Job started for " + allTopics.length + " topics",
       success: true
     });
 
@@ -339,8 +339,8 @@ Respons dalam format JSON:
               const parsed = JSON.parse(content);
               successResponse = {
                 caption: parsed.caption || content.substring(0, 150),
-                imagePrompt: parsed.imagePrompt || `${topic} aesthetic Instagram post style, Indonesian theme`,
-                hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`]
+                imagePrompt: parsed.imagePrompt || `${item.content} aesthetic Instagram post style, Indonesian theme`,
+                hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : [`#${item.content.replace(/\s+/g, '')}`, `#${item.content}`, `#indonesia`, `#viral`]
               };
               console.log('✅ Parsed successfully:', successResponse);
               break;
@@ -348,8 +348,8 @@ Respons dalam format JSON:
               console.log('⚠️ JSON parse failed, using content as caption');
               successResponse = {
                 caption: content.substring(0, 150),
-                imagePrompt: `${topic} aesthetic Instagram post style, modern Indonesian design`,
-                hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`]
+                imagePrompt: `${item.content} aesthetic Instagram post style, modern Indonesian design`,
+                hashtags: [`#${item.content.replace(/\s+/g, '')}`, `#${item.content}`, `#indonesia`, `#viral`]
               };
               break;
             }
@@ -390,13 +390,14 @@ Respons dalam format JSON:
       "artificial intelligence": "🤖 AI di Indonesia! Masa depan teknologi sudah di sini 🇮🇩"
     };
 
-    const caption = indonesianContent[topic.toLowerCase()] ||
-                   `🔥 ${topic} Indonesia sedang trending! Swipe up untuk detail lengkap 🚀`;
+    const topicName = item.type === 'news' ? 'Berita Terkini' : item.content;
+    const caption = indonesianContent[topicName.toLowerCase()] ||
+                   `🔥 ${topicName} Indonesia sedang trending! Swipe up untuk detail lengkap 🚀`;
 
     return {
       caption: caption,
-      imagePrompt: `${topic} aesthetic Indonesian Instagram post style, vibrant colors, modern design, cultural elements`,
-      hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`, `#trending`, `# lokal`]
+      imagePrompt: `${topicName} aesthetic Indonesian Instagram post style, vibrant colors, modern design, cultural elements`,
+      hashtags: [`#${topicName.replace(/\s+/g, '')}`, `#${topicName}`, `#indonesia`, `#viral`, `#trending`, `#lokal`]
     };
   }
 }
@@ -789,10 +790,9 @@ app.get('*', (req, res) => {
                     setTimeout(function() {
                         document.getElementById("jobCard").classList.remove("hidden");
                         document.getElementById("jobsCard").classList.remove("hidden");
-                        loadTopics();
                         refreshJobs();
                         setInterval(refreshJobs, 5000);
-                        showStatus("jobStatus", "🎉 Ready to create automation jobs!", "success");
+                        showStatus("jobStatus", "🎉 Ready to create automation jobs! Enter a news URL to get started.", "success");
                     }, 500);
 
                 } else {
