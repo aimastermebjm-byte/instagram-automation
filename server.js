@@ -218,7 +218,7 @@ async function generateInstagramContent(topic, apiKey) {
             'User-Agent': 'Instagram-Automation/1.0'
           },
           body: JSON.stringify({
-            model: "gpt-4",
+            model: "GLM-4.6",
             messages: [
               {
                 role: "system",
