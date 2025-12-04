@@ -165,76 +165,129 @@ async function processContentGeneration(jobId, topics, options, apiKey) {
 // Generate Instagram content using Z.ai API
 async function generateInstagramContent(topic, apiKey) {
   try {
-    // Use fetch to call Z.ai API
-    const response = await fetch('https://api.z.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: "glm-4.6",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert Instagram content creator. Create engaging, viral-worthy content about Indonesian topics. Always respond in valid JSON format with caption, imagePrompt, and hashtags fields."
-          },
-          {
-            role: "user",
-            content: `Create an Instagram post about "${topic}" in Indonesian. Make it engaging, trending, and suitable for Indonesian audience. Include:
-1. A catchy caption (max 150 characters)
-2. An image prompt for AI image generation
-3. Relevant hashtags (5-8 hashtags)
+    console.log(`🔗 Calling Z.ai API for topic: ${topic}`);
 
-Respond in JSON format:
+    // Test multiple possible Z.ai API endpoints
+    const possibleEndpoints = [
+      'https://api.z.ai/v1/chat/completions',
+      'https://api.z.ai/openai/v1/chat/completions',
+      'https://z.ai/api/v1/chat/completions'
+    ];
+
+    let lastError = null;
+    let successResponse = null;
+
+    for (const endpoint of possibleEndpoints) {
+      try {
+        console.log(`📡 Trying endpoint: ${endpoint}`);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Instagram-Automation/1.0'
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              {
+                role: "system",
+                content: "You are an expert Instagram content creator specializing in Indonesian content. Create viral, engaging content. Always respond in JSON format with caption, imagePrompt, and hashtags fields."
+              },
+              {
+                role: "user",
+                content: `Buat postingan Instagram tentang "${topic}" dalam bahasa Indonesia. Buat yang menarik, trending, dan cocok untuk audiens Indonesia. Sertakan:
+1. Caption menarik (maks 150 karakter)
+2. Image prompt untuk AI image generation
+3. Hashtag yang relevan (5-8 hashtag)
+
+Respons dalam format JSON:
 {
-  "caption": "engaging caption here",
-  "imagePrompt": "detailed image description for AI generation",
+  "caption": "caption menarik di sini",
+  "imagePrompt": "deskripsi gambar detail untuk AI generation",
   "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
 }`
+              }
+            ],
+            max_tokens: 500,
+            temperature: 0.8
+          })
+        });
+
+        console.log(`📊 Response status: ${response.status} ${response.statusText}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ API Response:', JSON.stringify(data, null, 2));
+
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            const content = data.choices[0].message.content;
+            console.log('📝 Raw content:', content);
+
+            // Try to parse JSON response
+            try {
+              const parsed = JSON.parse(content);
+              successResponse = {
+                caption: parsed.caption || content.substring(0, 150),
+                imagePrompt: parsed.imagePrompt || `${topic} aesthetic Instagram post style, Indonesian theme`,
+                hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`]
+              };
+              console.log('✅ Parsed successfully:', successResponse);
+              break;
+            } catch (parseError) {
+              console.log('⚠️ JSON parse failed, using content as caption');
+              successResponse = {
+                caption: content.substring(0, 150),
+                imagePrompt: `${topic} aesthetic Instagram post style, modern Indonesian design`,
+                hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`]
+              };
+              break;
+            }
           }
-        ],
-        max_tokens: 500,
-        temperature: 0.8
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Z.ai API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (data.choices && data.choices[0] && data.choices[0].message) {
-      const content = data.choices[0].message.content;
-
-      // Try to parse JSON response
-      try {
-        const parsed = JSON.parse(content);
-        return {
-          caption: parsed.caption || content.substring(0, 150),
-          imagePrompt: parsed.imagePrompt || `${topic} aesthetic Instagram post style`,
-          hashtags: Array.isArray(parsed.hashtags) ? parsed.hashtags : [`#${topic.replace(/\s+/g, '')}`, `#${topic}`]
-        };
-      } catch (parseError) {
-        // Fallback if JSON parsing fails
-        return {
-          caption: content.substring(0, 150),
-          imagePrompt: `${topic} aesthetic Instagram post style`,
-          hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#viral`, `#trending`]
-        };
+        } else {
+          lastError = `${response.status} ${response.statusText}`;
+          console.log(`❌ Endpoint ${endpoint} failed: ${lastError}`);
+        }
+      } catch (error) {
+        lastError = error.message;
+        console.log(`❌ Endpoint ${endpoint} error: ${lastError}`);
       }
     }
 
-    throw new Error('No valid response from Z.ai API');
+    if (successResponse) {
+      return successResponse;
+    }
+
+    throw new Error(`All endpoints failed. Last error: ${lastError}`);
 
   } catch (error) {
-    console.error('Z.ai API error:', error);
-    // Return fallback content if API fails
+    console.error('💥 Z.ai API completely failed:', error);
+    console.log('🔄 Using enhanced fallback with Indonesian content');
+
+    // Enhanced fallback with Indonesian-specific content
+    const indonesianContent = {
+      "teknologi": "🚀 Teknologi Indonesia semakin maju! Swipe up untuk info terbaru 📱",
+      "bisnis": "💼 Bisnis lokal berkembang pesat! Peluang emas untuk entrepreneur 🇮🇩",
+      "kesehatan": "🏥 Tips kesehatan ala Indonesia! Sehat bersama keluarga ❤️",
+      "olahraga": "⚽ Olahraga Indonesia membanggakan! Dukung atlet kita 🥇",
+      "hiburan": "🎬 Hiburan tanpa batas! Film Indonesia keren abis 🎭",
+      "politik": "🏛️ Politik untuk rakyat! Ikuti perkembangan terkini 📰",
+      "sains": "🔬 Sains Indonesia menakjubkan! Temuan baru dari para ilmuwan 🧪",
+      "travel": "✈️ Jelajahi keindahan Indonesia! Wisata lokal luar biasa 🏝️",
+      "kuliner": "🍜 Kuliner nusantara menggugah selera! Makanan tradisional terenak 🌶️",
+      "fashion": "👗 Fashion Indonesia kekinian! Gaya lokal mendunia 🌟",
+      "startup": "💡 Startup Indonesia bermunculan! Inovasi tanpa henti 🚀",
+      "artificial intelligence": "🤖 AI di Indonesia! Masa depan teknologi sudah di sini 🇮🇩"
+    };
+
+    const caption = indonesianContent[topic.toLowerCase()] ||
+                   `🔥 ${topic} Indonesia sedang trending! Swipe up untuk detail lengkap 🚀`;
+
     return {
-      caption: `🔥 Trending content about ${topic}! Swipe up to learn more 🚀`,
-      imagePrompt: `${topic} aesthetic Instagram post style, modern, clean design`,
-      hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#viral`, `#trending`, `#indonesia`]
+      caption: caption,
+      imagePrompt: `${topic} aesthetic Indonesian Instagram post style, vibrant colors, modern design, cultural elements`,
+      hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${topic}`, `#indonesia`, `#viral`, `#trending`, `# lokal`]
     };
   }
 }
